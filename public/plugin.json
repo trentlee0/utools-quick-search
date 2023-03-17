@@ -1,0 +1,24 @@
+{
+  "name": "Quick Search",
+  "pluginName": "Quick Search",
+  "description": "通过 URL 快速搜索、打开网页和应用",
+  "version": "1.0.0",
+  "author": "Trent0",
+  "homepage": "https://github.com/trentlee0",
+  "logo": "logo.png",
+  "main": "index.html",
+  "preload": "preload.js",
+  "development": {
+    "main": "http://127.0.0.1:5173/"
+  },
+  "features": [
+    {
+      "code": "quick-search",
+      "explain": "Quick Search 设置",
+      "cmds": [
+        "Quick Search Setting",
+        "快速搜索设置"
+      ]
+    }
+  ]
+}
