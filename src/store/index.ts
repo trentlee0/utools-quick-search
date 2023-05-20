@@ -1,76 +1,62 @@
-import {defineStore} from 'pinia'
-import {toRaw} from 'vue'
+import { createPinia, defineStore } from 'pinia'
+import { toRaw } from 'vue'
 import SettingModel from '@/models/SettingModel'
 import SearchItemModel from '@/models/SearchItemModel'
 import CategoryModel from '@/models/CategoryModel'
-import storage from '@/utils/storage'
-import {StoreKey} from '@/constant'
-import {toMap, promisify, moveItems} from '@/utils/common'
+import { storage } from 'utools-utils'
+import { StoreKey } from '@/constant'
+import { toMap, moveItems, isIllegalIndex } from '@/utils/collections'
 import * as category from '@/api/category'
 import * as search from '@/api/search'
 import * as feature from '@/api/feature'
 
-function checkSearchItem(item: SearchItemModel) {
-  // 检查子标题是否存在，如果不存在赋默认值
-  item.subtitle = item.subtitle || '默认应用打开'
-  // 只有输入应用的路径才限定平台
-  if (item.app) {
-    const getPlatform = () => {
-      if (utools.isWindows()) return 'win32'
-      if (utools.isMacOS()) return 'darwin'
-      return 'linux'
-    }
-    item.platform = getPlatform()
-  } else {
-    item.platform = ['win32', 'darwin', 'linux']
-  }
-}
-
 export const useMainStore = defineStore('main', {
   state: () => {
-    const searchItems = search.getData()
-    searchItems.forEach((item) => {
-      if (item.enabled === undefined || item.enabled) {
-        feature.addFeature(item)
-      }
-    })
-    const idIndexMap = toMap(
-      searchItems,
-      (item) => item.id,
-      (item, index) => index
+    const setting = storage.sync.getOrDefault(
+      StoreKey.SETTING,
+      new SettingModel()
     )
 
-    let setting = storage.sync.get<SettingModel>(StoreKey.SETTING)
-    if (setting === null) {
-      setting = new SettingModel()
+    const searchItems = search.getList()
+    if (SettingModel.migrateDatabase(setting, searchItems)) {
+      console.log('database migrated:', setting)
       storage.sync.set(StoreKey.SETTING, setting)
+    }
+
+    // 生成 Feature
+    for (const item of searchItems) {
+      if (item.enabled === false) continue
+      feature.addFeature(item)
     }
 
     return {
       setting,
       searchItems,
-      idIndexMap
+      map: toMap(
+        searchItems,
+        (item) => item.id,
+        (item, index) => index
+      )
     }
   },
   actions: {
-    getIndex(itemId: number) {
-      return this.idIndexMap.get(itemId) ?? -1
+    _getIndex(itemId: number) {
+      return this.map.get(itemId) ?? -1
     },
     // 添加 id 到 index 的映射
-    setIndex(itemId: number, index: number) {
-      this.idIndexMap.set(itemId, index)
+    _setIndex(itemId: number, index: number) {
+      this.map.set(itemId, index)
     },
     // 移除 id 到 index 的映射
-    removeIndex(itemId: number) {
-      this.idIndexMap.delete(itemId)
+    _removeIndex(itemId: number) {
+      this.map.delete(itemId)
     },
     moveSearchItems(fromItemId: number, toItemId: number) {
-      const fromIndex = this.getIndex(fromItemId)
-      const toIndex = this.getIndex(toItemId)
+      const fromIndex = this._getIndex(fromItemId)
+      const toIndex = this._getIndex(toItemId)
 
       moveItems(this.searchItems, fromIndex, toIndex, (oldIndex, newIndex) => {
-        const {id} = this.searchItems[newIndex]
-        this.setIndex(id, newIndex)
+        this._setIndex(this.searchItems[newIndex].id, newIndex)
       })
       search.saveItemIds(this.searchItems.map((item) => item.id))
     },
@@ -78,52 +64,50 @@ export const useMainStore = defineStore('main', {
       if (typeof itemId === 'string') {
         itemId = parseInt(itemId)
       }
-      const index = this.getIndex(itemId)
+      const index = this._getIndex(itemId)
       return this.searchItems[index]
     },
-    addSearchItem(item: SearchItemModel): Promise<void> {
-      return promisify(() => {
-        checkSearchItem(item)
+    addSearchItem(item: SearchItemModel) {
+      SearchItemModel.checkSearchItem(item)
 
-        this.searchItems.push(item)
-        this.setIndex(item.id, this.searchItems.length - 1)
-        const raw = toRaw(item)
-        search.addItem(raw)
-        feature.addFeature(raw)
-      })()
+      this.searchItems.push(item)
+      this._setIndex(item.id, this.searchItems.length - 1)
+      const raw = toRaw(item)
+      search.addItem(raw)
+      feature.addFeature(raw)
     },
-    updateSearchItem(itemId: number, item: SearchItemModel): Promise<void> {
-      return promisify(() => {
-        const index = this.getIndex(itemId)
+    updateSearchItem(itemId: number, item: SearchItemModel) {
+      const index = this._getIndex(itemId)
 
-        const a = 'fdsfdsafdsafdsdfdfs'
-        checkSearchItem(item)
+      SearchItemModel.checkSearchItem(item)
 
-        this.searchItems[index] = item
-        const raw = toRaw(item)
-        search.updateItem(raw)
-        feature.updateFeature(raw)
-      })()
+      this.searchItems[index] = item
+      const raw = toRaw(item)
+      search.updateItem(raw)
+      feature.updateFeature(raw)
     },
     removeSearchItem(itemId: number) {
-      const index = this.getIndex(itemId)
+      const index = this._getIndex(itemId)
 
       const item = this.searchItems[index]
       this.searchItems.splice(index, 1)
-      this.removeIndex(item.id)
+      this._removeIndex(item.id)
       search.removeItem(item.id)
       feature.removeFeature(item.id)
     },
     updateEnabledStatus(itemId: number, enabled: boolean) {
-      const index = this.getIndex(itemId)
+      const index = this._getIndex(itemId)
 
       this.searchItems[index].enabled = enabled
       const raw = toRaw(this.searchItems[index])
       search.updateItem(raw)
-      if (enabled) feature.addFeature(raw)
-      else feature.removeFeature(raw.id)
+      if (enabled) {
+        feature.addFeature(raw)
+      } else {
+        feature.removeFeature(raw.id)
+      }
     },
-    hasAnySearchItem(categoryId: string): boolean {
+    hasSearchItem(categoryId: string) {
       return !!this.searchItems.find((item) => item.categoryId === categoryId)
     }
   }
@@ -131,8 +115,13 @@ export const useMainStore = defineStore('main', {
 
 export const useCategoryStore = defineStore('category', {
   state: () => ({
-    categories: category.getData()
+    categories: category.getList()
   }),
+  getters: {
+    allCategories(): Array<CategoryModel> {
+      return [CategoryModel.ALL, ...this.categories]
+    }
+  },
   actions: {
     getCategory(categoryId: string) {
       const binarySearch = () => {
@@ -149,29 +138,28 @@ export const useCategoryStore = defineStore('category', {
       }
       return this.categories[binarySearch()]
     },
-    addCategory(name: string): Promise<void> {
-      return promisify(() => {
-        const last = this.categories[this.categories.length - 1]
-        // 生成分类ID
-        const categoryId = (parseInt(last.id) + 1).toString()
-        const model = new CategoryModel(categoryId, name)
-        this.categories.push(model)
-        category.save(toRaw(this.categories))
-      })()
+    addCategory(name: string) {
+      const last = this.categories[this.categories.length - 1]
+      // 生成分类ID
+      const categoryId = (parseInt(last.id) + 1).toString()
+      const model = new CategoryModel(categoryId, name)
+      this.categories.push(model)
+      category.save(toRaw(this.categories))
     },
-    updateCategory(index: number, name: string): Promise<void> {
-      return promisify(() => {
-        if (index < 0 || index >= this.categories.length) return
+    updateCategory(index: number, name: string) {
+      if (isIllegalIndex(this.categories, index)) return
 
-        this.categories[index].text = name
-        category.save(toRaw(this.categories))
-      })()
+      this.categories[index].text = name
+      category.save(toRaw(this.categories))
     },
     removeCategory(index: number) {
-      if (index < 0 || index >= this.categories.length) return
+      if (isIllegalIndex(this.categories, index)) return
 
       this.categories.splice(index, 1)
       category.save(toRaw(this.categories))
     }
   }
 })
+
+const pinia = createPinia()
+export default pinia

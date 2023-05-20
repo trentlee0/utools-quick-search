@@ -1,5 +1,5 @@
-const {existsSync} = require('fs')
-const {exec} = require('child_process')
+const { existsSync } = require('fs')
+const { exec } = require('child_process')
 
 function handleError(err) {
   if (!err) return
@@ -9,7 +9,7 @@ function handleError(err) {
 
 function execCommand(command) {
   if (utools.isWindows()) {
-    exec(command, {shell: 'powershell.exe'}, handleError)
+    exec(command, { shell: 'powershell.exe' }, handleError)
   } else {
     exec(command, handleError)
   }
@@ -33,7 +33,7 @@ function getCommand(query, app) {
   return buildOpenOnLinux(query, app)
 }
 
-window.open = (query, app) => {
+window.openQuery = (query, app) => {
   execCommand(getCommand(query, app))
 }
 

@@ -1,8 +1,8 @@
 import CategoryModel from '@/models/CategoryModel'
-import storage from '@/utils/storage'
-import {StoreKey} from '@/constant'
+import { storage } from 'utools-utils'
+import { StoreKey } from '@/constant'
 
-export function getData(): Array<CategoryModel> {
+export function getList() {
   return storage.sync.getOrDefault(StoreKey.CATEGORY, [CategoryModel.DEFAULT])
 }
 

@@ -1,7 +1,7 @@
 <template>
   <select
-    class="outline-none bg-transparent rounded-md px-1 py-1 border border-gray-300 dark:border-stone-600"
-    :value="value"
+    class="rounded-md border border-gray-300 bg-transparent px-1 py-1 outline-none dark:border-stone-600"
+    :value="modelValue"
     @input="handleInputEvent"
   >
     <option
@@ -15,26 +15,25 @@
 </template>
 
 <script setup lang="ts">
+import { toMap } from '@/utils/collections'
+
 interface ItemProp {
   id: string
   text: string
 }
 
 const props = defineProps<{
-  value: string
+  modelValue: string
   items: Array<ItemProp>
 }>()
 
-const map = new Map<string, ItemProp>()
-props.items.forEach((item) => {
-  map.set(item.id, item)
-})
+const map = toMap(props.items, (item) => item.id)
 
-const emits = defineEmits(['update:value', 'input'])
-const handleInputEvent = (e: any) => {
-  const id = e.target.value as string
-  emits('update:value', id)
-  emits('input', map.get(id))
+const emit = defineEmits(['update:modelValue', 'input'])
+function handleInputEvent(e: Event) {
+  const id = (e.target as HTMLInputElement).value
+  emit('update:modelValue', id)
+  emit('input', map.get(id))
 }
 </script>
 

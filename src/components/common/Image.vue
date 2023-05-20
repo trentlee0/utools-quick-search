@@ -1,8 +1,4 @@
 <template>
-  <!-- <div
-    class="bg-no-repeat bg-center z-10"
-    :style="{backgroundImage: `url(${src})`, backgroundSize: scale}"
-  ></div> -->
   <img
     :class="`${ScaleMap[scale]} ${SideMap[side]}`"
     :src="src"
@@ -19,6 +15,7 @@ enum ScaleMap {
   none = 'object-none',
   'scale-down' = 'object-scale-down'
 }
+
 enum SideMap {
   center = 'object-center',
   top = 'object-top',
@@ -31,8 +28,8 @@ withDefaults(
   defineProps<{
     src?: string
     alt?: string
-    scale?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'
-    side?: 'center' | 'top' | 'left' | 'bottom' | 'right'
+    scale?: keyof typeof ScaleMap
+    side?: keyof typeof SideMap
   }>(),
   {
     scale: 'contain',

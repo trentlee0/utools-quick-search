@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-5 w-full grid grid-cols-12 gap-y-6 gap-x-5 items-center">
+  <div class="mt-5 grid w-full grid-cols-12 items-center gap-y-6 gap-x-5">
     <slot></slot>
   </div>
 </template>

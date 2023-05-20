@@ -1,53 +1,66 @@
 <template>
-  <div
-    ref="outsideContent"
-    v-show="value"
-    class="w-full h-full fixed top-0 left-0 z-50 flex justify-center items-center shadow-sm"
-    style="background: rgba(0, 0, 0, 0.65)"
-    @click="handleOutsideClick"
-  >
-    <div class="bg-white dark:bg-neutral-800">
-      <div class="p-3 flex items-center">
-        <Icon
-          class="cursor-pointer mr-2"
-          :real-size="20"
-          type="mdiClose"
-          @click="emitValue"
-          v-if="btnType === 'close'"
-        ></Icon>
-        <span class="font-bold select-none">{{ title }}</span>
-      </div>
-      <Divider></Divider>
-      <div class="p-4 pb-5">
-        <slot></slot>
-      </div>
-      <div class="px-4 py-3 flex justify-end" v-if="btnType === 'confirm'">
-        <Btn
-          class="mr-3 border dark:border-gray-500 shadow-sm"
-          @click="handleCancelClick"
-          >取消</Btn
+  <Teleport to="body">
+    <Transition name="dialog">
+      <div class="dialog-mask" v-if="modelValue">
+        <div
+          ref="outsideContent"
+          class="dialog-container"
+          @click="handleOutsideClick"
         >
-        <Btn
-          class="bg-blue-500 text-white shadow-sm"
-          @click="handleConfirmClick"
-          >确认</Btn
-        >
+          <div class="bg-white dark:bg-neutral-800">
+            <div class="flex items-center p-3">
+              <Icon
+                class="mr-2 cursor-pointer"
+                :real-size="20"
+                :icon="mdiClose"
+                @click="emit('update:modelValue', false)"
+                v-if="btnType === 'close'"
+              ></Icon>
+              <span class="select-none font-bold">{{ title }}</span>
+            </div>
+
+            <Divider></Divider>
+
+            <div class="p-4 pb-5">
+              <slot></slot>
+            </div>
+
+            <div
+              class="flex justify-end px-4 py-3"
+              v-if="btnType === 'confirm'"
+            >
+              <Btn
+                class="mr-3 border shadow-sm dark:border-gray-500"
+                @click="handleCancelClick"
+              >
+                取消
+              </Btn>
+              <Btn
+                class="bg-blue-500 text-white shadow-sm"
+                @click="handleConfirmClick"
+              >
+                确认
+              </Btn>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 import Divider from '@/components/common/Divider.vue'
 import Btn from '@/components/common/Btn.vue'
 import Icon from '@/components/common/Icon.vue'
-import {ref} from 'vue'
+import { ref } from 'vue'
+import { mdiClose } from '@mdi/js'
 
 const outsideContent = ref(null)
 
 const props = withDefaults(
   defineProps<{
-    value: boolean
+    modelValue: boolean
     title?: string
     outsideClosable?: boolean
     btnType?: 'close' | 'confirm'
@@ -59,23 +72,41 @@ const props = withDefaults(
   }
 )
 
-const emits = defineEmits(['update:value', 'confirm', 'cancel'])
-const emitValue = () => {
-  emits('update:value', false)
+const emit = defineEmits(['update:modelValue', 'confirm', 'cancel'])
+
+function handleConfirmClick() {
+  emit('confirm')
+  emit('update:modelValue', false)
 }
-const handleConfirmClick = () => {
-  emits('confirm')
-  emitValue()
+
+function handleCancelClick() {
+  emit('cancel')
+  emit('update:modelValue', false)
 }
-const handleCancelClick = () => {
-  emits('cancel')
-  emitValue()
-}
-const handleOutsideClick = (e: any) => {
+
+function handleOutsideClick(e: any) {
   if (props.outsideClosable && e.target === outsideContent.value) {
-    emitValue()
+    emit('update:modelValue', false)
   }
 }
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="sass">
+.dialog-mask
+  @apply fixed top-0 left-0 w-full h-full flex z-50
+  background: rgba(0, 0, 0, 0.65)
+  transition: all 0.3s ease
+
+.dialog-container
+  @apply shadow-lg m-auto
+  transition: all 0.3s ease
+
+.dialog-enter-from
+  opacity: 0
+
+.dialog-leave-to
+  opacity: 0
+
+.dialog-enter-from .dialog-container,.dialog-leave-to .dialog-container
+  transform: scale(1.1)
+</style>

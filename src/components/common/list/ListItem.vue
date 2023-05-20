@@ -3,20 +3,20 @@
     <div class="item-icon" v-if="icon">
       <div
         class="item-icon"
-        :style="{'background-image': `url(${icon})`}"
+        :style="{ 'background-image': `url(${icon})` }"
       ></div>
     </div>
     <div class="item-content">
       <div class="flex-grow overflow-hidden">
         <div class="truncate">{{ title }}</div>
-        <div class="text-sm text-gray-400 truncate">
+        <div class="truncate text-sm text-gray-400">
           <div class="h-5">{{ subtitle }}</div>
         </div>
       </div>
       <div class="flex-none">
         <slot name="action"></slot>
       </div>
-      <div class="flex-none w-8"></div>
+      <div class="w-8 flex-none"></div>
       <div class="flex-none text-gray-400">
         {{ keyword }}
       </div>

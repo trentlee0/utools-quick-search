@@ -23,7 +23,6 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
-    "public/preload.js"
+    "src/**/*.vue"
   ]
 }

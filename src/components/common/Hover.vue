@@ -9,6 +9,7 @@
 <style lang="sass" scoped>
 .mask
   filter: opacity(0.88)
+
 .mask:hover
   filter: opacity(1)
 </style>

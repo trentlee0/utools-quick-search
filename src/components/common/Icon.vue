@@ -1,17 +1,17 @@
 <template>
   <svg-icon
-    :path="useIcon(type)"
+    class="inline"
+    :path="icon"
     :size="realSize ? realSize : SizeMap[size]"
     :viewbox="viewbox"
     :flip="flip"
     :rotate="rotate"
-    :style="{color: color ?? ''}"
+    :style="{ color: color ?? '' }"
   ></svg-icon>
 </template>
 
 <script setup lang="ts">
 import SvgIcon from '@jamescoyle/vue-icon'
-import {useIcon} from '@/hooks/useIcon'
 
 enum SizeMap {
   'x-small' = 12,
@@ -24,8 +24,8 @@ enum SizeMap {
 
 withDefaults(
   defineProps<{
-    type: string
-    size?: 'x-small' | 'small' | 'default' | 'medium' | 'large' | 'x-large'
+    icon: string
+    size?: keyof typeof SizeMap
     realSize?: number
     color?: string
     viewbox?: string

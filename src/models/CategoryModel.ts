@@ -1,4 +1,7 @@
 export default class CategoryModel {
+  public static readonly ALL = new CategoryModel('', '所有')
+  public static readonly DEFAULT = new CategoryModel('0', '默认')
+
   id: string
   text: string
 
@@ -6,7 +9,4 @@ export default class CategoryModel {
     this.id = id
     this.text = text
   }
-
-  public static readonly DEFAULT = new CategoryModel('0', '默认')
-  public static readonly AGGREGATION = new CategoryModel('', '所有')
 }

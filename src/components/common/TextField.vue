@@ -2,7 +2,7 @@
   <div class="flex w-full items-center">
     <label v-if="label" :for="label" class="mr-2">{{ label }}</label>
     <div
-      class="input-class w-full rounded-md px-3 py-1 flex items-center border focus-within:border-gray-500 dark:focus-within:border-gray-400 transition"
+      class="input-class flex w-full items-center rounded-md border px-3 py-1 transition focus-within:border-gray-500 dark:focus-within:border-gray-400"
       :class="`${
         disabled
           ? 'cursor-default border-gray-100 dark:border-stone-700'
@@ -11,7 +11,7 @@
       @click="clickEvent"
     >
       <div class="mr-2" v-if="icon">
-        <Icon :type="icon"></Icon>
+        <Icon :icon="icon"></Icon>
       </div>
       <input
         :id="label"
@@ -19,21 +19,21 @@
         :disabled="disabled"
         :type="type"
         class="input-class w-full outline-none"
-        :value="value"
+        :value="modelValue"
         :placeholder="placeholder"
         :autofocus="autofocus"
         @input="handlInputEvent"
-        @blur="emits('blur', $event)"
+        @blur="emit('blur', $event)"
       />
-      <div class="ml-2 cursor-default" v-if="!!appendIcon">
-        <Icon :type="appendIcon" size="small"></Icon>
+      <div class="ml-2 flex cursor-default items-center" v-if="!!appendIcon">
+        <Icon :icon="appendIcon" size="small"></Icon>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue'
+import { ref } from 'vue'
 import Icon from '@/components/common/Icon.vue'
 
 enum SizeMap {
@@ -44,7 +44,7 @@ enum SizeMap {
 
 withDefaults(
   defineProps<{
-    value?: string
+    modelValue?: string
     icon?: string
     autofocus?: boolean
     placeholder?: string
@@ -63,15 +63,16 @@ withDefaults(
   }
 )
 
-const emits = defineEmits(['update:value', 'input', 'blur'])
-const handlInputEvent = (e: any) => {
-  emits('update:value', e.target.value)
-  emits('input', e.target.value)
+const emit = defineEmits(['update:modelValue', 'input', 'blur'])
+function handlInputEvent(e: Event) {
+  const value = (e.target as HTMLInputElement).value
+  emit('update:modelValue', value)
+  emit('input', value)
 }
 
-const textInput = ref<any>()
-const clickEvent = () => {
-  textInput.value.focus()
+const textInput = ref<HTMLInputElement | null>(null)
+function clickEvent() {
+  textInput.value?.focus()
 }
 </script>
 

@@ -1,13 +1,14 @@
 <template>
   <div class="col-span-2"></div>
   <div :class="`col-span-2 ${AlignMap[align]}`">
-    {{ label }} <span v-show="!!help" :title="help" class="text-xs cursor-default">?</span>
+    {{ label }}
+    <span v-show="!!help" :title="help" class="cursor-default text-xs">?</span>
   </div>
   <div class="col-span-5">
     <slot></slot>
   </div>
   <div class="col-span-3">
-    <div class="text-red-500 text-xs" v-if="verify?.msg" v-show="verify.show">
+    <div class="text-xs text-red-500" v-if="verify?.msg" v-show="verify.show">
       {{ verify.msg }}
     </div>
   </div>
@@ -23,7 +24,7 @@ enum AlignMap {
 withDefaults(
   defineProps<{
     label?: string
-    align?: 'right' | 'left' | 'center'
+    align?: keyof typeof AlignMap
     verify?: {
       msg: string
       show: boolean

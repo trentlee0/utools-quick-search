@@ -1,4 +1,4 @@
-import {createRouter, createWebHashHistory, RouteRecordRaw} from 'vue-router'
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -9,7 +9,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/info/categories/:categoryId/items/:itemId?',
     name: 'Info',
-    component: () => import('@/views/info.vue')
+    component: () => import('@/views/Info.vue')
   }
 ]
 

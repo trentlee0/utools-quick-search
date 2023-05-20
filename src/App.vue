@@ -1,7 +1,7 @@
 <template>
-  <router-view v-slot="{Component}">
+  <router-view v-slot="{ Component }">
     <keep-alive>
-      <component :is="Component" />
+      <component :is="Component"/>
     </keep-alive>
   </router-view>
 </template>
@@ -9,6 +9,6 @@
 <script setup lang="ts"></script>
 
 <style lang="sass">
-#app
+body
   @apply w-screen h-screen overflow-auto dark:text-gray-100 dark:bg-utools-black
 </style>

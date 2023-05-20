@@ -1,25 +1,25 @@
 <template>
   <div
-    class="bg-gray-200 dark:bg-gray-500 w-4 h-4 flex rounded overflow-hidden cursor-pointer"
+    class="flex h-4 w-4 cursor-pointer overflow-hidden rounded bg-gray-200 dark:bg-gray-500"
     @click="handleClickEvent"
   >
     <input
-      class="cursor-pointer w-full h-full outline-none accent-blue-500"
+      class="h-full w-full cursor-pointer accent-blue-500 outline-none"
       type="checkbox"
-      :checked="value"
-      :hidden="!value"
-      @input="emits('input', $event)"
+      :checked="modelValue"
+      :hidden="!modelValue"
+      @input="emit('input', $event)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{value?: boolean}>(), {value: false})
+withDefaults(defineProps<{ modelValue?: boolean }>(), { modelValue: false })
 
-const emits = defineEmits(['update:value', 'input'])
+const emit = defineEmits(['update:modelValue', 'input'])
 
-const handleClickEvent = (e: any) => {
-  emits('update:value', e.target.checked)
+function handleClickEvent(e: Event) {
+  emit('update:modelValue', (e.target as HTMLInputElement).checked)
 }
 </script>
 

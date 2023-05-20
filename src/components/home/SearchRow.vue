@@ -1,22 +1,28 @@
 <template>
-  <td class="pl-4 pr-3">
-    <div class="flex items-center select-none">
+  <td class="cursor-pointer pl-4 pr-3" @click="handleRowClick">
+    <div class="flex select-none items-center">
       <Image
         v-if="props.icon"
-        class="w-9 h-9 bg-cover bg-center flex-none cursor-pointer"
+        class="h-9 w-9 flex-none bg-cover bg-center"
         :class="disabledClass"
         :src="props.icon"
         scale="cover"
         @click="handleRowClick"
       >
       </Image>
-      <div class="w-2 h-9 cursor-pointer" @click="handleRowClick"></div>
-      <div class="overflow-hidden cursor-pointer" @click="handleRowClick">
+      <div class="h-9 w-2" @click="handleRowClick"></div>
+      <div class="cursor-pointer overflow-hidden" @click="handleRowClick">
         <div class="truncate text-lg" :class="disabledClass">
-          {{ props.title }}
+          <span>{{ props.title }}</span>
+          <icon
+            class="ml-1 text-neutral-500 dark:text-neutral-400"
+            :icon="mdiPackage"
+            size="x-small"
+            v-show="builtin"
+          ></icon>
         </div>
         <div
-          class="text-sm text-gray-500 dark:text-gray-400 truncate"
+          class="truncate text-sm text-gray-500 dark:text-gray-400"
           :class="disabledClass"
           :title="props.subtitle"
         >
@@ -25,32 +31,34 @@
       </div>
     </div>
   </td>
-  <td class="pr-5 truncate" :class="disabledClass">
+  <td class="truncate pr-5" :class="disabledClass">
     <span :title="props.url">{{ props.url }}</span>
   </td>
   <td class="pr-2">
     <div
       v-show="!!categoryName"
       :title="categoryName"
-      class="text-sm p-1 max-w-fit truncate text-white rounded-lg opacity-80"
+      class="max-w-fit truncate rounded-lg p-1 text-sm text-white opacity-80"
       :class="`${mapColor(categoryName)}`"
     >
       {{ categoryName }}
     </div>
   </td>
-  <td class="pr-2 truncate" :class="disabledClass">
+  <td class="truncate pr-2" :class="disabledClass">
     <span>{{ props?.keyword }}</span>
   </td>
   <td>
-    <Checkbox :value="props.enabled" @click="handleCheckEvent"></Checkbox>
+    <Checkbox v-model="props.enabled" @click="handleCheckEvent"></Checkbox>
   </td>
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/common/Icon.vue'
 import Image from '@/components/common/Image.vue'
 import Checkbox from '@/components/common/Checkbox.vue'
-import {computed} from 'vue'
-import {useCategoryStore} from '@/store'
+import { computed } from 'vue'
+import { useCategoryStore } from '@/store'
+import { mdiPackage } from '@mdi/js'
 
 const COLORS = [
   'bg-lime-500',
@@ -61,7 +69,7 @@ const COLORS = [
   'bg-violet-500'
 ]
 
-const mapColor = (s: string) => {
+function mapColor(s: string) {
   let t = 0
   for (let i = 0; i < s.length; i++) {
     t ^= s.charCodeAt(i)
@@ -79,9 +87,11 @@ const props = withDefaults(
     keyword?: string
     enabled?: boolean
     categoryId: string
+    builtin?: boolean
   }>(),
   {
-    enabled: true
+    enabled: true,
+    builtin: false
   }
 )
 
@@ -92,12 +102,14 @@ const categoryName = computed(
 
 const disabledClass = computed(() => (!props.enabled ? 'row-checked' : ''))
 
-const emits = defineEmits(['enabled-change', 'row-click'])
-const handleCheckEvent = () => {
-  emits('enabled-change', !props.enabled)
+const emit = defineEmits(['enabled-change', 'row-click'])
+
+function handleCheckEvent() {
+  emit('enabled-change', !props.enabled)
 }
-const handleRowClick = () => {
-  emits('row-click')
+
+function handleRowClick() {
+  emit('row-click')
 }
 </script>
 

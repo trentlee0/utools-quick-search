@@ -1,19 +1,20 @@
 <template>
   <TextField
-    :value="value"
-    icon="mdiMagnify"
+    :model-value="modelValue"
+    :icon="mdiMagnify"
     :autofocus="autofocus"
     placeholder="搜索"
-    @input="handlInputEvent"
+    @update:model-value="emit('update:modelValue', $event)"
   ></TextField>
 </template>
 
 <script setup lang="ts">
 import TextField from '@/components/common/TextField.vue'
+import { mdiMagnify } from '@mdi/js'
 
 withDefaults(
   defineProps<{
-    value: string
+    modelValue: string
     autofocus?: boolean
   }>(),
   {
@@ -21,11 +22,7 @@ withDefaults(
   }
 )
 
-const emits = defineEmits(['update:value', 'input'])
-const handlInputEvent = (value: string) => {
-  emits('update:value', value)
-  emits('input', value)
-}
+const emit = defineEmits(['update:modelValue'])
 </script>
 
 <style lang="sass" scoped></style>

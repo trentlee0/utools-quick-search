@@ -1,9 +1,9 @@
-import {promisify} from './common'
+import { promisify } from './common'
 
 export type Rules = {
   [prop: string]: {
     check: (value?: any) => boolean
-    verify: {msg: string; show: boolean}
+    verify: { msg: string; show: boolean }
   }
 }
 
@@ -13,7 +13,7 @@ export function checkProp(rules: Rules, prop: string, value: any) {
 }
 
 export function checkForm(rules: Rules, formData: object) {
-  for (const [prop, {check, verify}] of Object.entries(rules)) {
+  for (const [prop, { check, verify }] of Object.entries(rules)) {
     const value = Reflect.get(formData, prop)
     if ((verify.show = !check(value))) throw new Error(verify.msg)
   }

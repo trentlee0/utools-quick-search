@@ -15,14 +15,15 @@
 
       <BasicFormItem label="名称" :verify="rules.title.verify">
         <TextField
-          v-model:value="data.title"
+          v-model="data.title"
           @blur="checkProp(rules, 'title', data.title)"
+          :append-icon="isBuiltinItem(data.id) ? mdiPackage : undefined"
         ></TextField>
       </BasicFormItem>
 
       <BasicFormItem label="子标题">
         <TextField
-          v-model:value="data.subtitle"
+          v-model="data.subtitle"
           placeholder="默认应用打开"
         ></TextField>
       </BasicFormItem>
@@ -33,9 +34,9 @@
         help="要使用搜索，请用 `{query}` 替换搜索关键词"
       >
         <TextField
-          v-model:value="data.url"
+          v-model="data.url"
           @blur="checkProp(rules, 'url', data.url)"
-          :append-icon="isQueryItem ? 'mdiMagnify' : ''"
+          :append-icon="isQueryItem ? mdiMagnify : ''"
         ></TextField>
       </BasicFormItem>
 
@@ -46,7 +47,7 @@
       >
         <TextField
           :disabled="!isQueryItem"
-          v-model:value="data.keyword"
+          v-model="data.keyword"
           @blur="checkProp(rules, 'keyword', data.keyword)"
         ></TextField>
       </BasicFormItem>
@@ -54,82 +55,78 @@
       <BasicFormItem label="分类">
         <div class="flex items-center">
           <Select
-            class="w-full h-9"
-            v-model:value="data.categoryId"
-            :items="categories"
+            class="h-9 w-full"
+            v-model="data.categoryId"
+            :items="categoryStore.categories"
           ></Select>
           <div class="ml-2 cursor-pointer" title="所有分类">
-            <Icon @click="categoryDialog = true" type="mdiShapeOutline"></Icon>
+            <Icon @click="categoryDialog = true" :icon="mdiShapeOutline"></Icon>
           </div>
         </div>
       </BasicFormItem>
 
       <BasicFormItem label="打开方式" :verify="rules.app.verify">
         <SelectAppInput
-          v-model:value="data.app"
+          v-model="data.app"
           @blur="checkProp(rules, 'app', data.app)"
           @select-file="checkProp(rules, 'app', data.app)"
         ></SelectAppInput>
       </BasicFormItem>
 
       <BasicFormItem>
-        <Btn class="bg-blue-500 text-white w-full" @click="saveSearchItem">
-          {{ op === 'updateOrDelete' ? '保存' : '添加' }}
+        <Btn class="w-full bg-blue-500 text-white" @click="saveSearchItem">
+          {{ op === 'update' ? '保存' : '添加' }}
         </Btn>
 
         <Btn
-          class="mt-4 bg-red-500 text-white w-full"
+          class="mt-4 w-full bg-red-500 text-white"
           @click="deleteDialog = true"
-          v-if="op === 'updateOrDelete'"
+          v-if="op === 'update' && !isDefaultSearchItem(searchItemId)"
         >
           删除
         </Btn>
       </BasicFormItem>
     </BasicForm>
 
-    <Dialog
-      v-model:value="deleteDialog"
-      title="提示"
-      @confirm="deleteSearchItem"
-    >
+    <Dialog v-model="deleteDialog" title="提示" @confirm="deleteSearchItem">
       <div class="w-52">确定要删除吗？</div>
     </Dialog>
 
     <Dialog
-      v-model:value="categoryDialog"
+      v-model="categoryDialog"
       title="所有分类"
       :outside-closable="false"
       btn-type="close"
     >
       <ul class="w-72">
         <li
-          v-for="(category, index) in categories"
+          v-for="(category, index) in categoryStore.categories"
           :key="category.id"
           class="flex items-center justify-between"
         >
           <input
-            :disabled="category.id === CategoryModel.DEFAULT.id"
-            class="bg-transparent outline-none mr-1"
+            class="mr-1 bg-transparent outline-none"
             :value="category.text"
+            :disabled="category.id === CategoryModel.DEFAULT.id"
             @blur="handleUpdateCategory($event, index)"
           />
           <Btn
             v-show="category.id !== CategoryModel.DEFAULT.id"
-            class="flex-none text-red-500 font-bold text-sm"
+            class="flex-none text-sm font-bold text-red-500"
             @click="handleDeleteCategory(category, index)"
           >
             删除
           </Btn>
         </li>
-        <li class="flex justify-between mt-5">
+        <li class="mt-5 flex justify-between">
           <TextField
-            v-model:value="newCategory"
+            v-model="newCategoryName"
             size="small"
             class="mr-1"
             placeholder="分类名"
           ></TextField>
           <Btn
-            class="flex-none text-blue-500 font-bold text-sm"
+            class="flex-none text-sm font-bold text-blue-500"
             @click="handleAddCategory"
           >
             添加
@@ -147,65 +144,87 @@ import Icon from '@/components/common/Icon.vue'
 import Header from '@/components/common/Header.vue'
 import Select from '@/components/common/Select.vue'
 import Dialog from '@/components/common/Dialog.vue'
-import SelectAppInput from '@/components/search-item-form/SelectAppInput.vue'
-import BasicFormItem from '@/components/search-item-form/BasicFormItem.vue'
-import BasicForm from '@/components/search-item-form/BasicForm.vue'
-import SelectImageInput from '@/components/search-item-form/SelectImageInput.vue'
+import SelectAppInput from '@/components/info/SelectAppInput.vue'
+import BasicFormItem from '@/components/info/BasicFormItem.vue'
+import BasicForm from '@/components/info/BasicForm.vue'
+import SelectImageInput from '@/components/info/SelectImageInput.vue'
 import SearchItemModel from '@/models/SearchItemModel'
 import CategoryModel from '@/models/CategoryModel'
-import {reactive, ref, computed, onActivated, onDeactivated} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
-import {useCategoryStore, useMainStore} from '@/store'
-import {deepCopy} from '@/utils/common'
-import {checkFormAsync, checkProp, Rules} from '@/utils/check'
+import { reactive, ref, computed, onActivated, onDeactivated } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useCategoryStore, useMainStore } from '@/store'
+import { deepCopy } from '@/utils/common'
+import { checkFormAsync, checkProp, Rules } from '@/utils/check'
+import { mdiShapeOutline, mdiMagnify, mdiPackage } from '@mdi/js'
+import { FileConstant } from '@/constant'
 
 const router = useRouter()
 const route = useRoute()
 const mainStore = useMainStore()
 const categoryStore = useCategoryStore()
 
-const handleDeleteCategory = (category: CategoryModel, index: number) => {
-  if (mainStore.hasAnySearchItem(category.id)) {
-    alert('当前分类下含有内容')
+function handleDeleteCategory(category: CategoryModel, index: number) {
+  if (mainStore.hasSearchItem(category.id)) {
+    alert('当前分类下含有项目')
   } else {
     categoryStore.removeCategory(index)
   }
 }
-const handleUpdateCategory = (e: any, index: number) => {
-  categoryStore.updateCategory(index, e.target.value).catch((err) => alert(err))
-}
-const handleAddCategory = () => {
-  categoryStore
-    .addCategory(newCategory.value)
-    .then(() => {
-      newCategory.value = ''
-    })
-    .catch((err) => alert(err))
+
+function isBuiltinItem(itemId: number) {
+  return (
+    SearchItemModel.DEFAULT_SEARCH_ITEMS.findIndex(
+      (item) => item.id === itemId
+    ) !== -1
+  )
 }
 
-const categories = computed(() => categoryStore.categories)
-const isQueryItem = computed(() => {
-  if (data.value.url.includes('{query}')) {
-    return true
-  } else {
-    data.value.keyword = ''
-    return false
+function handleUpdateCategory(e: any, index: number) {
+  try {
+    categoryStore.updateCategory(index, e.target.value)
+  } catch (err) {
+    alert(err)
   }
+}
+
+function handleAddCategory() {
+  try {
+    categoryStore.addCategory(newCategoryName.value)
+    newCategoryName.value = ''
+  } catch (err) {
+    alert(err)
+  }
+}
+
+const isQueryItem = computed(() => {
+  if (data.value.url.includes('{query}')) return true
+  data.value.keyword = ''
+  return false
 })
 
-const op = ref<'updateOrDelete' | 'add'>()
+const op = ref<'update' | 'add'>()
 
-const deleteDialog = ref<boolean>(false)
-const categoryDialog = ref<boolean>(false)
-const newCategory = ref<string>('')
+const deleteDialog = ref(false)
+const categoryDialog = ref(false)
+const newCategoryName = ref('')
 
-const searchItemId = ref<number>(-1)
-const data = ref<SearchItemModel>(new SearchItemModel())
+const searchItemId = ref(-1)
+const data = ref(new SearchItemModel())
+
+function isDefaultSearchItem(itemId: number) {
+  return (
+    SearchItemModel.DEFAULT_SEARCH_ITEMS.findIndex(
+      (item) => item.id === itemId
+    ) !== -1
+  )
+}
+
 onActivated(() => {
-  const {itemId, categoryId} = route.params
+  const { itemId, categoryId } = route.params
+
   // 通过搜索项 ID 区分页面作用
-  if (!!itemId) {
-    op.value = 'updateOrDelete'
+  if (itemId) {
+    op.value = 'update'
     searchItemId.value = parseInt(itemId as string)
     data.value = deepCopy(mainStore.getSearchItem(searchItemId.value))
   } else {
@@ -219,61 +238,59 @@ onActivated(() => {
 onDeactivated(() => {
   deleteDialog.value = false
   categoryDialog.value = false
-  newCategory.value = ''
-  Object.values(rules).forEach((item) => {
-    item.verify.show = false
-  })
-  data.value = new SearchItemModel()
+  newCategoryName.value = ''
+  for (const key in rules) {
+    rules[key].verify.show = false
+  }
 })
 
 const rules = reactive<Rules>({
   title: {
     check: (value?: string) => !!value,
-    verify: {msg: '名称不能为空', show: false}
+    verify: { msg: '名称不能为空', show: false }
   },
   url: {
     check: (value?: string) => !!value,
-    verify: {msg: 'URL 不能为空', show: false}
+    verify: { msg: 'URL 不能为空', show: false }
   },
   app: {
     check: (value?: string) => !value || existsFile(value),
-    verify: {msg: '文件不存在', show: false}
+    verify: { msg: '文件不存在', show: false }
   },
   keyword: {
     check: (value?: string) => !value || /^[a-zA-Z0-9]+$/.test(value),
-    verify: {msg: '关键字只能为字母或数字', show: false}
+    verify: { msg: '关键字只能为字母或数字', show: false }
   }
 })
-const saveSearchItem = () => {
-  checkFormAsync(rules, data.value)
-    .then(() => {
-      if (op.value === 'add') {
-        mainStore
-          .addSearchItem(data.value)
-          .then(() => router.replace('/'))
-          .catch((err) => {
-            mainStore.removeSearchItem(data.value.id)
-            alert(err)
-          })
-      } else {
-        mainStore
-          .updateSearchItem(searchItemId.value, data.value)
-          .then(() => router.replace('/'))
-          .catch((err) => alert(err))
+
+async function saveSearchItem() {
+  try {
+    await checkFormAsync(rules, data.value)
+    if (op.value === 'add') {
+      try {
+        await mainStore.addSearchItem(data.value)
+      } catch (err) {
+        mainStore.removeSearchItem(data.value.id)
+        return alert(err)
       }
-    })
-    .catch((err: Error) => alert(err.message))
+    } else {
+      await mainStore.updateSearchItem(searchItemId.value, data.value)
+    }
+    router.replace('/')
+  } catch (err) {
+    alert(err)
+  }
 }
 
-const deleteSearchItem = () => {
+function deleteSearchItem() {
   mainStore.removeSearchItem(searchItemId.value)
   router.replace('/')
 }
 
-const handleSelectIcon = (file: any) => {
+function handleSelectIcon(file: File) {
   // 限制图片的大小，单位 MB
   const limit = 0.512
-  if (file.size > limit * 1024 * 1024) {
+  if (file.size > limit * FileConstant.MB) {
     alert(`图片大小要小于等于 ${limit} MB！`)
     return
   }
@@ -287,7 +304,8 @@ const handleSelectIcon = (file: any) => {
     data.value.icon = arrayBufferToBase64(reader.result as ArrayBuffer)
   }
 }
-const handleDetachIcon = () => {
+
+function handleDetachIcon() {
   data.value.icon = ''
 }
 </script>

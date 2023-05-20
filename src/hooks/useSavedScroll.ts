@@ -1,15 +1,15 @@
-import {reactive, onActivated} from 'vue'
-import {onBeforeRouteLeave} from 'vue-router'
+import { onActivated, reactive } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 
-export function useSavedScroll(el: string) {
-  const pos = reactive({left: 0, top: 0})
+export function useSavedScroll(el: HTMLElement | null) {
+  const pos = reactive({ left: 0, top: 0 })
+
   onActivated(() => {
-    document.querySelector(el)?.scrollTo(pos)
+    el?.scrollTo(pos)
   })
+
   onBeforeRouteLeave(() => {
-    const element = document.querySelector(el)
-    pos.left = element?.scrollLeft ?? 0
-    pos.top = element?.scrollTop ?? 0
+    pos.left = el?.scrollLeft ?? 0
+    pos.top = el?.scrollTop ?? 0
   })
-  return pos
 }
