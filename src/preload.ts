@@ -2,11 +2,14 @@ import { copyText, isMacOS, isWindows, showNotification } from 'utools-api'
 import { existsSync } from 'fs'
 import { execScript } from 'utools-utils/command'
 
+function option(name: string, value?: string) {
+  return value ? `${name} "${value}"` : ''
+}
+
 function getCommand(query: string, app?: string) {
-  if (isWindows())
-    return `Start-Process ${app ? `-FilePath "${app}"` : ''} "${query}"`
-  if (isMacOS()) return `open ${app ? `-a "${app}"` : ''} "${query}"`
-  return `${app ? app : 'xdg-open'} "${query}"`
+  if (isWindows()) return `Start-Process ${option('-FilePath', app)} "${query}"`
+  if (isMacOS()) return `open ${option('-a', app)} "${query}"`
+  return `${app || 'xdg-open'} "${query}"`
 }
 
 export async function openQuery(query: string, app?: string) {
