@@ -18,6 +18,7 @@
         ref="textInput"
         :disabled="disabled"
         :type="type"
+        :readonly="readonly"
         class="input-class w-full outline-none"
         :value="modelValue"
         :placeholder="placeholder"
@@ -25,7 +26,11 @@
         @input="handlInputEvent"
         @blur="emit('blur', $event)"
       />
-      <div class="ml-2 flex cursor-default items-center" v-if="!!appendIcon">
+      <div
+        class="ml-2 flex cursor-default items-center"
+        v-if="!!appendIcon"
+        :title="appendIconTitle"
+      >
         <Icon :icon="appendIcon" size="small"></Icon>
       </div>
     </div>
@@ -51,14 +56,17 @@ withDefaults(
     label?: string
     type?: string
     disabled?: boolean
+    readonly?: boolean
     appendIcon?: string
-    size?: 'small' | 'medium' | 'large'
+    appendIconTitle?: string
+    size?: keyof typeof SizeMap
   }>(),
   {
     autofocus: false,
     full: false,
     text: 'text',
     disabled: false,
+    readonly: false,
     size: 'medium'
   }
 )

@@ -8,18 +8,14 @@ export default class SettingModel {
     this.version = 0
   }
 
-  public static migrateDatabase(
-    setting: SettingModel,
-    searchItems: Array<SearchItemModel>
-  ) {
+  public static migrateDatabase(setting: SettingModel) {
     let needed = false
     if (setting.version < 1) {
       // 保存默认搜索项
-      SearchItemModel.DEFAULT_SEARCH_ITEMS.forEach((item) => {
+      SearchItemModel.DEFAULT_SEARCH_ITEMS.reverse().forEach((item) => {
         SearchItemModel.checkSearchItem(item)
-        search.addItem(item)
+        search.unshiftItem(item)
       })
-      searchItems.unshift(...SearchItemModel.DEFAULT_SEARCH_ITEMS)
       setting.version = 1
       needed = true
     }

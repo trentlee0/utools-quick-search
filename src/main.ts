@@ -4,7 +4,9 @@ import './style.css'
 import router from './router'
 import pinia, { useMainStore } from './store'
 import { FeatureCode } from '@/constant'
-import { beforeExecute, buildURL, nonePage } from '@/utils/common'
+import { buildURL, nonePage } from '@/utils/common'
+import { openQuery } from './preload'
+
 
 createApp(App).use(pinia).use(router).mount('#app')
 
@@ -24,11 +26,9 @@ utools.onPluginEnter(({ code, type, payload }) => {
   const { url, app, keyword } = mainStore.getSearchItem(code)
 
   if (type === 'regex') {
-    beforeExecute()
     payload = payload as string
     openQuery(buildURL(url, payload.replace(`${keyword} `, '')), app)
   } else if (url.lastIndexOf('{query}') === -1) {
-    beforeExecute()
     openQuery(buildURL(url), app)
   } else {
     nonePage()
@@ -43,7 +43,6 @@ window.addEventListener('keydown', (e) => {
   if (state.code === FeatureCode.QUICK_SEARCH) return
 
   if (e.key === 'Enter') {
-    beforeExecute()
     openQuery(buildURL(state.url, state.word), state.app)
   }
 })

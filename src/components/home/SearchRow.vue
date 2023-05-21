@@ -1,19 +1,17 @@
 <template>
-  <td class="cursor-pointer pl-4 pr-3" @click="handleRowClick">
+  <td class="pl-4 pr-3">
     <div class="flex select-none items-center">
       <Image
-        v-if="props.icon"
+        v-if="icon"
         class="h-9 w-9 flex-none bg-cover bg-center"
-        :class="disabledClass"
-        :src="props.icon"
+        :src="icon"
         scale="cover"
-        @click="handleRowClick"
       >
       </Image>
-      <div class="h-9 w-2" @click="handleRowClick"></div>
-      <div class="cursor-pointer overflow-hidden" @click="handleRowClick">
-        <div class="truncate text-lg" :class="disabledClass">
-          <span>{{ props.title }}</span>
+      <div class="h-9 w-2"></div>
+      <div class="overflow-hidden">
+        <div class="truncate text-lg">
+          <span>{{ title }}</span>
           <icon
             class="ml-1 text-neutral-500 dark:text-neutral-400"
             :icon="mdiPackage"
@@ -22,17 +20,17 @@
           ></icon>
         </div>
         <div
-          class="truncate text-sm text-gray-500 dark:text-gray-400"
-          :class="disabledClass"
-          :title="props.subtitle"
+          class="truncate text-sm"
+          :class="`${enabled ? 'text-gray-500 dark:text-gray-400' : ''}`"
+          :title="subtitle"
         >
-          {{ props.subtitle }}
+          {{ subtitle }}
         </div>
       </div>
     </div>
   </td>
-  <td class="truncate pr-5" :class="disabledClass">
-    <span :title="props.url">{{ props.url }}</span>
+  <td class="truncate pr-5">
+    <span :title="url">{{ url }}</span>
   </td>
   <td class="pr-2">
     <div
@@ -44,11 +42,14 @@
       {{ categoryName }}
     </div>
   </td>
-  <td class="truncate pr-2" :class="disabledClass">
-    <span>{{ props?.keyword }}</span>
+  <td class="truncate pr-2">
+    <span>{{ keyword }}</span>
   </td>
   <td>
-    <Checkbox v-model="props.enabled" @click="handleCheckEvent"></Checkbox>
+    <Checkbox
+      :model-value="enabled"
+      @click.stop="emit('enabled-change', !enabled)"
+    ></Checkbox>
   </td>
 </template>
 
@@ -100,20 +101,7 @@ const categoryName = computed(
   () => categoryStore.getCategory(props.categoryId)?.text
 )
 
-const disabledClass = computed(() => (!props.enabled ? 'row-checked' : ''))
-
-const emit = defineEmits(['enabled-change', 'row-click'])
-
-function handleCheckEvent() {
-  emit('enabled-change', !props.enabled)
-}
-
-function handleRowClick() {
-  emit('row-click')
-}
+const emit = defineEmits(['enabled-change'])
 </script>
 
-<style lang="sass" scoped>
-.row-checked
-  @apply text-gray-300 dark:text-gray-500 line-through
-</style>
+<style lang="sass" scoped></style>

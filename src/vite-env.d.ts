@@ -12,8 +12,7 @@ declare module '@jamescoyle/vue-icon' {
   export default component
 }
 
-declare module globalThis {
-  export function openQuery(query: string, app?: string): void
-
-  export function existsFile(path: string): boolean
+declare module 'utools-api' {
+  import utools from 'utools-api-types'
+  export = utools
 }

@@ -1,47 +1,47 @@
 <template>
   <Teleport to="body">
     <Transition name="dialog">
-      <div class="dialog-mask" v-if="modelValue">
-        <div
-          ref="outsideContent"
-          class="dialog-container"
-          @click="handleOutsideClick"
-        >
+      <div class="dialog-mask" v-if="modelValue" @click="handleOutsideClick">
+        <div class="dialog-container" @click.stop>
           <div class="bg-white dark:bg-neutral-800">
-            <div class="flex items-center p-3">
-              <Icon
-                class="mr-2 cursor-pointer"
-                :real-size="20"
-                :icon="mdiClose"
-                @click="emit('update:modelValue', false)"
-                v-if="btnType === 'close'"
-              ></Icon>
-              <span class="select-none font-bold">{{ title }}</span>
+            <div class="flex items-center px-4 py-3">
+              <slot name="header">
+                <Icon
+                  class="mr-2 cursor-pointer"
+                  :real-size="20"
+                  :icon="mdiClose"
+                  @click="emit('update:modelValue', false)"
+                  v-if="btnType === 'close'"
+                ></Icon>
+                <span class="select-none font-bold">{{ title }}</span>
+              </slot>
             </div>
 
             <Divider></Divider>
 
-            <div class="p-4 pb-5">
+            <div class="px-5 py-4">
               <slot></slot>
             </div>
 
-            <div
-              class="flex justify-end px-4 py-3"
-              v-if="btnType === 'confirm'"
-            >
-              <Btn
-                class="mr-3 border shadow-sm dark:border-gray-500"
-                @click="handleCancelClick"
+            <slot name="footer">
+              <div
+                v-if="btnType === 'confirm'"
+                class="flex justify-end px-4 pb-3 text-sm"
               >
-                取消
-              </Btn>
-              <Btn
-                class="bg-blue-500 text-white shadow-sm"
-                @click="handleConfirmClick"
-              >
-                确认
-              </Btn>
-            </div>
+                <Btn
+                  class="mr-3 border shadow-sm dark:border-gray-500"
+                  @click="handleCancelClick"
+                >
+                  取消
+                </Btn>
+                <Btn
+                  class="bg-blue-500 text-white shadow-sm"
+                  @click="handleConfirmClick"
+                >
+                  确认
+                </Btn>
+              </div>
+            </slot>
           </div>
         </div>
       </div>
@@ -53,21 +53,18 @@
 import Divider from '@/components/common/Divider.vue'
 import Btn from '@/components/common/Btn.vue'
 import Icon from '@/components/common/Icon.vue'
-import { ref } from 'vue'
 import { mdiClose } from '@mdi/js'
-
-const outsideContent = ref(null)
 
 const props = withDefaults(
   defineProps<{
     modelValue: boolean
     title?: string
-    outsideClosable?: boolean
-    btnType?: 'close' | 'confirm'
+    persistence?: boolean
+    btnType?: 'none' | 'close' | 'confirm'
   }>(),
   {
     title: '',
-    outsideClosable: true,
+    persistence: false,
     btnType: 'confirm'
   }
 )
@@ -84,8 +81,8 @@ function handleCancelClick() {
   emit('update:modelValue', false)
 }
 
-function handleOutsideClick(e: any) {
-  if (props.outsideClosable && e.target === outsideContent.value) {
+function handleOutsideClick(e: Event) {
+  if (!props.persistence) {
     emit('update:modelValue', false)
   }
 }

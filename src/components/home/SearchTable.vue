@@ -15,10 +15,14 @@
           v-for="(row, index) in table"
           :key="`${row.title}-${index}`"
           class="h-14 transition duration-300 hover:bg-gray-100 dark:hover:bg-neutral-700"
-          :class="{ 'bg-gray-300 dark:bg-neutral-500': hoverIndex === index }"
+          :class="{
+            'bg-gray-300 dark:bg-neutral-500': hoverIndex === index,
+            'row-unchecked': row.enabled === false
+          }"
           draggable="true"
           @dragstart="handleDragStartEvent($event, row.id)"
           @dragenter="handleDragEnterEvent($event, index)"
+          @click="handleItemClick(index, row)"
           @drop="handleDropEvent($event, row.id)"
           @dragover.prevent
         >
@@ -31,7 +35,6 @@
             :enabled="row.enabled"
             :category-id="row.categoryId"
             :builtin="isBuiltinItem(row.id)"
-            @row-click="handleItemClick(index, row)"
             @enabled-change="handleEnabledChange(index, row, $event)"
           ></SearchRow>
         </tr>
@@ -101,6 +104,9 @@ function handleDropEvent(e: DragEvent, toItemId: number) {
 <style lang="sass" scoped>
 .table-head
   @apply text-left truncate
+
+.row-unchecked
+  @apply text-neutral-300 dark:text-neutral-500 grayscale
 
 list-move,.list-enter-active,.list-leave-active
   transition: all 0.3s ease

@@ -66,7 +66,7 @@ function handleDroptItem(value: { fromItemId: number; toItemId: number }) {
 
 function handleItemClick(value: { row: SearchItemModel }) {
   const { row } = value
-  if (row.enabled === undefined || row.enabled) {
+  if (row.enabled !== false) {
     router.push(`/info/categories/${row.categoryId}/items/${row.id}`)
   }
 }

@@ -13,11 +13,12 @@
         </div>
       </BasicFormItem>
 
-      <BasicFormItem label="名称" :verify="rules.title.verify">
+      <BasicFormItem label="名称" required :verify="rules.title.verify">
         <TextField
           v-model="data.title"
           @blur="checkProp(rules, 'title', data.title)"
-          :append-icon="isBuiltinItem(data.id) ? mdiPackage : undefined"
+          :append-icon="isBuiltinItem ? mdiPackage : undefined"
+          append-icon-title="内置搜索项"
         ></TextField>
       </BasicFormItem>
 
@@ -30,19 +31,21 @@
 
       <BasicFormItem
         label="URL"
+        required
         :verify="rules.url.verify"
-        help="要使用搜索，请用 `{query}` 替换搜索关键词"
+        title="要使用搜索，请用 `{query}` 替换搜索关键词"
       >
         <TextField
           v-model="data.url"
           @blur="checkProp(rules, 'url', data.url)"
           :append-icon="isQueryItem ? mdiMagnify : ''"
+          :disabled="isBuiltinItem"
         ></TextField>
       </BasicFormItem>
 
       <BasicFormItem
         label="关键字"
-        help="直接在主搜索框输入 `关键字 <搜索关键词>` 即可搜索（需要 URL 包含 `{query}`）"
+        title="直接在主搜索框输入 `关键字 <搜索关键词>` 即可搜索（需要 URL 包含 `{query}`）"
         :verify="rules.keyword.verify"
       >
         <TextField
@@ -92,12 +95,7 @@
       <div class="w-52">确定要删除吗？</div>
     </Dialog>
 
-    <Dialog
-      v-model="categoryDialog"
-      title="所有分类"
-      :outside-closable="false"
-      btn-type="close"
-    >
+    <Dialog btn-type="close" v-model="categoryDialog" title="所有分类">
       <ul class="w-72">
         <li
           v-for="(category, index) in categoryStore.categories"
@@ -157,6 +155,8 @@ import { deepCopy } from '@/utils/common'
 import { checkFormAsync, checkProp, Rules } from '@/utils/check'
 import { mdiShapeOutline, mdiMagnify, mdiPackage } from '@mdi/js'
 import { FileConstant } from '@/constant'
+import { encodeToBase64 } from '@/utils/files'
+import { existsFile } from '@/preload'
 
 const router = useRouter()
 const route = useRoute()
@@ -171,13 +171,12 @@ function handleDeleteCategory(category: CategoryModel, index: number) {
   }
 }
 
-function isBuiltinItem(itemId: number) {
-  return (
-    SearchItemModel.DEFAULT_SEARCH_ITEMS.findIndex(
-      (item) => item.id === itemId
-    ) !== -1
-  )
-}
+const isBuiltinItem = computed(
+  () =>
+    !!SearchItemModel.DEFAULT_SEARCH_ITEMS.find(
+      (item) => item.id === data.value.id
+    )
+)
 
 function handleUpdateCategory(e: any, index: number) {
   try {
@@ -227,6 +226,7 @@ onActivated(() => {
     op.value = 'update'
     searchItemId.value = parseInt(itemId as string)
     data.value = deepCopy(mainStore.getSearchItem(searchItemId.value))
+    data.value.enabled = data.value.enabled !== false
   } else {
     op.value = 'add'
     data.value = new SearchItemModel()
@@ -287,22 +287,14 @@ function deleteSearchItem() {
   router.replace('/')
 }
 
-function handleSelectIcon(file: File) {
+async function handleSelectIcon(file: File) {
   // 限制图片的大小，单位 MB
   const limit = 0.512
   if (file.size > limit * FileConstant.MB) {
     alert(`图片大小要小于等于 ${limit} MB！`)
     return
   }
-  const reader = new FileReader()
-  reader.readAsArrayBuffer(file)
-  reader.onloadend = () => {
-    const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
-      const str = String.fromCharCode(...new Uint8Array(buffer))
-      return `data:${file.type};base64,${window.btoa(str)}`
-    }
-    data.value.icon = arrayBufferToBase64(reader.result as ArrayBuffer)
-  }
+  data.value.icon = await encodeToBase64(file)
 }
 
 function handleDetachIcon() {

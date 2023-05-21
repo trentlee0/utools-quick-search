@@ -3,7 +3,7 @@ import { toRaw } from 'vue'
 import SettingModel from '@/models/SettingModel'
 import SearchItemModel from '@/models/SearchItemModel'
 import CategoryModel from '@/models/CategoryModel'
-import { storage } from 'utools-utils'
+import { sync } from 'utools-utils/storage'
 import { StoreKey } from '@/constant'
 import { toMap, moveItems, isIllegalIndex } from '@/utils/collections'
 import * as category from '@/api/category'
@@ -12,16 +12,14 @@ import * as feature from '@/api/feature'
 
 export const useMainStore = defineStore('main', {
   state: () => {
-    const setting = storage.sync.getOrDefault(
-      StoreKey.SETTING,
-      new SettingModel()
-    )
+    const setting = sync.getOrDefault(StoreKey.SETTING, new SettingModel())
+
+    if (SettingModel.migrateDatabase(setting)) {
+      console.log('database migrated:', setting)
+      sync.set(StoreKey.SETTING, setting)
+    }
 
     const searchItems = search.getList()
-    if (SettingModel.migrateDatabase(setting, searchItems)) {
-      console.log('database migrated:', setting)
-      storage.sync.set(StoreKey.SETTING, setting)
-    }
 
     // 生成 Feature
     for (const item of searchItems) {

@@ -94,6 +94,7 @@ export default class SearchItemModel {
     this.id = id ?? Date.now()
     // 设置默认分类
     this.categoryId = CategoryModel.DEFAULT.id
+    this.enabled = true
   }
 
   public static create(props: {

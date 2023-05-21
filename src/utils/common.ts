@@ -6,11 +6,6 @@ export function promisify<T>(func: (...args: any) => T) {
   return (...args: any) => new Promise<T>((resolve) => resolve(func(...args)))
 }
 
-export function beforeExecute() {
-  utools.hideMainWindow()
-  utools.outPlugin()
-}
-
 export function nonePage() {
   utools.hideMainWindow()
   utools.setExpendHeight(0)

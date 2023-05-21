@@ -9,7 +9,7 @@
   >
     <div
       class="relative h-14 w-14 cursor-pointer"
-      title="选择图标"
+      title="选择图标，可拖拽图片到此"
       @click="openFileDialog"
     >
       <div
@@ -37,7 +37,7 @@
       ref="fileInputRef"
       type="file"
       @change="handleSelectFile"
-      accept=".png,.jpeg,.jpg,.webp"
+      :accept="acceptTypes"
       class="hidden"
     />
   </div>
@@ -58,6 +58,8 @@ withDefaults(
   }
 )
 
+const acceptTypes = ref('image/png, image/jpeg, image/gif, image/webp')
+
 const fileInputRef = ref<HTMLInputElement | null>(null)
 function openFileDialog() {
   fileInputRef.value?.click()
@@ -73,7 +75,12 @@ const dragging = ref(false)
 function handleDropEvent(e: DragEvent) {
   dragging.value = false
   const file = e.dataTransfer!.files[0]
-  emit('select-file', file)
+  console.log(file)
+  if (file.type && acceptTypes.value.includes(file.type)) {
+    emit('select-file', file)
+  } else {
+    alert('图片类型只能是：' + acceptTypes.value)
+  }
 }
 function handleDetachClick() {
   emit('detach-file')
