@@ -20,7 +20,7 @@ const state = {
 }
 
 utools.onPluginEnter((action) => {
-  const { code, type, payload } = action as Action<string>
+  const { code, type, payload } = action as Action
 
   state.code = code
   if (code === FeatureCode.QUICK_SEARCH) return
