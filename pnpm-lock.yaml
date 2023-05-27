@@ -15,7 +15,7 @@ specifiers:
   tailwindcss: ^3.2.0
   typescript: ^4.6.4
   utools-api-types: ^3.0.0
-  utools-utils: ^1.0.3
+  utools-utils: ^1.0.7
   vite: ^3.1.0
   vite-plugin-utools: ^0.5.4
   vue: ^3.2.37
@@ -26,7 +26,7 @@ dependencies:
   '@jamescoyle/vue-icon': 0.1.2
   '@mdi/js': 7.0.96
   pinia: 2.0.23_l7r24p6nevbtlimqmqcwa3ouhu
-  utools-utils: 1.0.3
+  utools-utils: 1.0.7
   vue: 3.2.41
   vue-router: 4.1.6_vue@3.2.41
 
@@ -2905,8 +2905,8 @@ packages:
     resolution: {integrity: sha512-KJYytaX/cnxRTm+fBKeDAV6PhE1Emrv4bZm/6pigVhxEM4StAy8UFGyo22bVARSRIUUxbEdtWIo6O7qmEGnv5A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npm.taobao.org/utools-api-types/-/utools-api-types-3.0.0.tgz}
     dev: true
 
-  /utools-utils/1.0.3:
-    resolution: {integrity: sha512-2POXN4gyaxxSy9X5RtPjW4QRbpJH15XxK9hq1G+8tQPUNttlMg0/Sx2PEMS9EcbZKIpHwXdtlG+tKI5A8TBk2w==}
+  /utools-utils/1.0.7:
+    resolution: {integrity: sha512-JYwdRIgM3ON4cooWQer1MxxRaV0klLgkkBJufaSOGB3HNoSrAhLjtzaAqZcHQbTVHMoJZea7/61AsNg5LYgytA==}
     dev: false
 
   /uuid/3.4.0:

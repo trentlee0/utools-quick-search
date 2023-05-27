@@ -8,7 +8,7 @@
           ? 'cursor-default border-gray-100 dark:border-stone-700'
           : 'cursor-text border-gray-300 dark:border-stone-600'
       } ${SizeMap[size]}`"
-      @click="clickEvent"
+      @click="focus"
     >
       <div class="mr-2" v-if="icon">
         <Icon :icon="icon"></Icon>
@@ -79,9 +79,14 @@ function handlInputEvent(e: Event) {
 }
 
 const textInput = ref<HTMLInputElement | null>(null)
-function clickEvent() {
+
+function focus() {
   textInput.value?.focus()
 }
+
+defineExpose({
+  focus
+})
 </script>
 
 <style lang="sass" scoped>

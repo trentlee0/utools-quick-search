@@ -14,7 +14,7 @@ function getCommand(query: string, app?: string) {
 
 export async function openQuery(query: string, app?: string) {
   try {
-    await execScript(getCommand(query, app), false)
+    await execScript(getCommand(query, app), true)
   } catch (err) {
     copyText(err + '')
     showNotification(`已复制错误: ${err}`)

@@ -6,7 +6,7 @@ import pinia, { useMainStore } from './store'
 import { FeatureCode } from '@/constant'
 import { buildURL, nonePage } from '@/utils/common'
 import { openQuery } from './preload'
-
+import { Action } from 'utools-utils/type'
 
 createApp(App).use(pinia).use(router).mount('#app')
 
@@ -19,14 +19,15 @@ const state = {
   word: <string | undefined>''
 }
 
-utools.onPluginEnter(({ code, type, payload }) => {
+utools.onPluginEnter((action) => {
+  const { code, type, payload } = action as Action<string>
+
   state.code = code
   if (code === FeatureCode.QUICK_SEARCH) return
 
   const { url, app, keyword } = mainStore.getSearchItem(code)
 
   if (type === 'regex') {
-    payload = payload as string
     openQuery(buildURL(url, payload.replace(`${keyword} `, '')), app)
   } else if (url.lastIndexOf('{query}') === -1) {
     openQuery(buildURL(url), app)

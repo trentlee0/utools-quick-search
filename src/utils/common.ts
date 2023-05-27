@@ -7,9 +7,9 @@ export function promisify<T>(func: (...args: any) => T) {
 }
 
 export function nonePage() {
-  utools.hideMainWindow()
+  // utools.hideMainWindow()
   utools.setExpendHeight(0)
-  utools.showMainWindow()
+  // utools.showMainWindow()
 }
 
 export function buildURL(url: string, query?: string) {

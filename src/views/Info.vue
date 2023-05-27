@@ -15,6 +15,7 @@
 
       <BasicFormItem label="名称" required :verify="rules.title.verify">
         <TextField
+          ref="titleFieldRef"
           v-model="data.title"
           @blur="checkProp(rules, 'title', data.title)"
           :append-icon="isBuiltinItem ? mdiPackage : undefined"
@@ -218,6 +219,8 @@ function isDefaultSearchItem(itemId: number) {
   )
 }
 
+const titleFieldRef = ref<InstanceType<typeof TextField> | null>(null)
+
 onActivated(() => {
   const { itemId, categoryId } = route.params
 
@@ -228,6 +231,7 @@ onActivated(() => {
     data.value = deepCopy(mainStore.getSearchItem(searchItemId.value))
     data.value.enabled = data.value.enabled !== false
   } else {
+    titleFieldRef.value?.focus()
     op.value = 'add'
     data.value = new SearchItemModel()
     // 设置默认分类 ID

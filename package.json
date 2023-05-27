@@ -12,7 +12,7 @@
     "@jamescoyle/vue-icon": "^0.1.2",
     "@mdi/js": "^7.0.96",
     "pinia": "^2.0.23",
-    "utools-utils": "^1.0.3",
+    "utools-utils": "^1.0.7",
     "vue": "^3.2.37",
     "vue-router": "^4.1.6"
   },
