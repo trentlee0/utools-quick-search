@@ -1,6 +1,7 @@
 import { copyText, isMacOS, isWindows, showNotification } from 'utools-api'
 import { existsSync } from 'fs'
-import { execScript } from 'utools-utils/command'
+import { hideAndOutPlugin } from 'utools-utils/command'
+import { execCommand, execPowerShell } from 'utools-utils/command'
 
 function option(name: string, value?: string) {
   return value ? `${name} "${value}"` : ''
@@ -14,7 +15,12 @@ function getCommand(query: string, app?: string) {
 
 export async function openQuery(query: string, app?: string) {
   try {
-    await execScript(getCommand(query, app), true)
+    hideAndOutPlugin()
+    if (utools.isWindows()) {
+      await execPowerShell(getCommand(query, app))
+    } else {
+      await execCommand(getCommand(query, app))
+    }
   } catch (err) {
     copyText(err + '')
     showNotification(`已复制错误: ${err}`)
