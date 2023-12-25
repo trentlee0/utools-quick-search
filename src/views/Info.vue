@@ -219,9 +219,21 @@ async function handleURLBlur() {
   checkProp(rules, 'url', data.value.url)
   if (isWebURL.value) {
     if (!data.value.title) {
-      const title = await getHtmlTitle(data.value.url)
-      data.value.title = title ?? ''
-      rules['title'].verify.show = false
+      const htmlTitle = await getHtmlTitle(data.value.url)
+      if (htmlTitle) {
+        if (htmlTitle.includes(' - ')) {
+          const [title, subtitle] = htmlTitle.split(' - ')
+          data.value.title = title.trim()
+          data.value.subtitle = subtitle.trim()
+        } else if (htmlTitle.includes(' | ')) {
+          const [subtitle, title] = htmlTitle.split(' | ')
+          data.value.title = title.trim()
+          data.value.subtitle = subtitle.trim()
+        } else {
+          data.value.title = htmlTitle
+        }
+        rules['title'].verify.show = false
+      }
     }
   }
 }
