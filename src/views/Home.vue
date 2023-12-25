@@ -91,7 +91,17 @@ watchEffect(() => {
         categoryId.value === CategoryModel.ALL.id ||
         item.categoryId === categoryId.value
     )
-    .filter((item) => !search || item.title.toUpperCase().includes(search))
+    .filter(
+      (item) =>
+        !search ||
+        item.title.toUpperCase().includes(search) ||
+        item.subtitle.toUpperCase().includes(search) ||
+        categoryStore
+          .getCategory(item.categoryId)
+          .text.toUpperCase()
+          .includes(search) ||
+        item.keyword?.toUpperCase().includes(search)
+    )
 })
 
 utools.onPluginOut(() => {

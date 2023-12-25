@@ -6,7 +6,7 @@
           <th class="table-head w-4/12 pl-4 pr-2">名称</th>
           <th class="table-head w-5/12">URL</th>
           <th class="table-head w-1/12">分类</th>
-          <th class="table-head w-1/12">关键字</th>
+          <th class="table-head w-1/12">搜索前缀</th>
           <th class="table-head w-1/12">启用</th>
         </tr>
       </thead>

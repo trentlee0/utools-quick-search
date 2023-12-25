@@ -2,7 +2,7 @@
   <div class="flex w-full items-center">
     <label v-if="label" :for="label" class="mr-2">{{ label }}</label>
     <div
-      class="input-class flex w-full items-center rounded-md border px-3 py-1 transition focus-within:border-gray-500 dark:focus-within:border-gray-400"
+      class="input-class flex w-full items-center rounded-md border px-2 py-1 transition focus-within:border-gray-500 dark:focus-within:border-gray-400"
       :class="`${
         disabled
           ? 'cursor-default border-gray-100 dark:border-stone-700'
@@ -10,8 +10,8 @@
       } ${SizeMap[size]}`"
       @click="focus"
     >
-      <div class="mr-2" v-if="icon">
-        <Icon :icon="icon"></Icon>
+      <div class="mr-1" v-if="icon">
+        <Icon :icon="icon" :real-size="22"></Icon>
       </div>
       <input
         :id="label"
@@ -33,6 +33,9 @@
       >
         <Icon :icon="appendIcon" size="small"></Icon>
       </div>
+    </div>
+    <div class="ml-2" v-if="$slots.append">
+      <slot name="append"></slot>
     </div>
   </div>
 </template>

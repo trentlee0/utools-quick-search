@@ -4,12 +4,23 @@
 
     <BasicForm class="mt-10">
       <BasicFormItem label="图标">
-        <div class="flex justify-center">
+        <div class="relative flex justify-center">
           <SelectImageInput
             :src="data.icon"
             @select-file="handleSelectIcon"
             @detach-file="handleDetachIcon"
           ></SelectImageInput>
+
+          <div class="absolute right-0 top-0 flex h-full items-center">
+            <div
+              class="cursor-pointer select-none"
+              v-show="isWebURL"
+              title="从 URL 下载图标"
+              @click="handleDownloadFavicon"
+            >
+              <Icon :icon="mdiDownload" :real-size="20"></Icon>
+            </div>
+          </div>
         </div>
       </BasicFormItem>
 
@@ -38,22 +49,40 @@
       >
         <TextField
           v-model="data.url"
-          @blur="checkProp(rules, 'url', data.url)"
+          @blur="handleURLBlur"
           :append-icon="isQueryItem ? mdiMagnify : ''"
           :disabled="isBuiltinItem"
-        ></TextField>
+        >
+          <template #append v-if="isEncodedURL">
+            <div
+              class="cursor-pointer"
+              title="URL 解码"
+              @click="handleDecodeURL"
+            >
+              <Icon :icon="mdiCodeTags"></Icon>
+            </div>
+          </template>
+        </TextField>
       </BasicFormItem>
 
       <BasicFormItem
-        label="关键字"
-        title="直接在主搜索框输入 `关键字 <搜索关键词>` 即可搜索（需要 URL 包含 `{query}`）"
+        label="搜索前缀"
+        title="直接在主搜索框输入 `搜索前缀 <搜索关键词>` 即可搜索（需要 URL 包含 `{query}`）"
         :verify="rules.keyword.verify"
       >
         <TextField
           :disabled="!isQueryItem"
           v-model="data.keyword"
           @blur="checkProp(rules, 'keyword', data.keyword)"
-        ></TextField>
+        >
+        </TextField>
+      </BasicFormItem>
+
+      <BasicFormItem label="默认搜索" title="在主搜索框匹配任何文本默认显示">
+        <Checkbox
+          :model-value="data.isOver"
+          @click="data.isOver = !data.isOver"
+        ></Checkbox>
       </BasicFormItem>
 
       <BasicFormItem label="分类">
@@ -149,15 +178,22 @@ import BasicForm from '@/components/info/BasicForm.vue'
 import SelectImageInput from '@/components/info/SelectImageInput.vue'
 import SearchItemModel from '@/models/SearchItemModel'
 import CategoryModel from '@/models/CategoryModel'
-import { reactive, ref, computed, onActivated, onDeactivated } from 'vue'
+import { reactive, ref, computed, onActivated, onDeactivated, toRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCategoryStore, useMainStore } from '@/store'
 import { deepCopy } from '@/utils/common'
 import { checkFormAsync, checkProp, Rules } from '@/utils/check'
-import { mdiShapeOutline, mdiMagnify, mdiPackage } from '@mdi/js'
+import {
+  mdiShapeOutline,
+  mdiMagnify,
+  mdiPackage,
+  mdiCodeTags,
+  mdiDownload
+} from '@mdi/js'
 import { FileConstant } from '@/constant'
 import { encodeToBase64 } from '@/utils/files'
-import { existsFile } from '@/preload'
+import { existsFile, getFavicon, getHtmlTitle } from '@/preload'
+import Checkbox from '@/components/common/Checkbox.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -178,6 +214,17 @@ const isBuiltinItem = computed(
       (item) => item.id === data.value.id
     )
 )
+
+async function handleURLBlur() {
+  checkProp(rules, 'url', data.value.url)
+  if (isWebURL.value) {
+    if (!data.value.title) {
+      const title = await getHtmlTitle(data.value.url)
+      data.value.title = title ?? ''
+      rules['title'].verify.show = false
+    }
+  }
+}
 
 function handleUpdateCategory(e: any, index: number) {
   try {
@@ -201,6 +248,23 @@ const isQueryItem = computed(() => {
   data.value.keyword = ''
   return false
 })
+
+const isEncodedURL = computed(() => /%[0-9a-fA-F]{2}/.test(data.value.url))
+function handleDecodeURL() {
+  data.value.url = decodeURI(data.value.url)
+}
+
+const isWebURL = computed(() => /^https?:\/\/.+/.test(data.value.url))
+async function handleDownloadFavicon() {
+  try {
+    const icon = await getFavicon(data.value.url)
+    if (icon) {
+      data.value.icon = icon
+    }
+  } catch (err: unknown) {
+    alert(err)
+  }
+}
 
 const op = ref<'update' | 'add'>()
 
@@ -263,7 +327,7 @@ const rules = reactive<Rules>({
   },
   keyword: {
     check: (value?: string) => !value || /^[a-zA-Z0-9]+$/.test(value),
-    verify: { msg: '关键字只能为字母或数字', show: false }
+    verify: { msg: '搜索前缀只能为字母或数字', show: false }
   }
 })
 
@@ -295,7 +359,7 @@ async function handleSelectIcon(file: File) {
   // 限制图片的大小，单位 MB
   const limit = 0.512
   if (file.size > limit * FileConstant.MB) {
-    alert(`图片大小要小于等于 ${limit} MB！`)
+    alert(`图片大小不能超过 ${limit} MB！`)
     return
   }
   data.value.icon = await encodeToBase64(file)

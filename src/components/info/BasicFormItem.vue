@@ -3,7 +3,7 @@
   <div class="col-span-2 cursor-default" :class="`${AlignMap[align]}`">
     <span class="" :title="title">{{ label }}</span>
     <span v-if="help" :title="help" class="text-xs">?</span>
-    <span v-if="required" class="ml-px text-sm text-neutral-400">*</span>
+    <span v-if="required" class="ml-px text-sm text-red-500">*</span>
   </div>
   <div class="col-span-5">
     <slot></slot>

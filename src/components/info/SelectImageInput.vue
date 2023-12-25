@@ -58,7 +58,7 @@ withDefaults(
   }
 )
 
-const acceptTypes = ref('image/png, image/jpeg, image/gif, image/webp')
+const acceptTypes = ref(['image/png', 'image/jpeg'].join(','))
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 function openFileDialog() {
@@ -75,7 +75,6 @@ const dragging = ref(false)
 function handleDropEvent(e: DragEvent) {
   dragging.value = false
   const file = e.dataTransfer!.files[0]
-  console.log(file)
   if (file.type && acceptTypes.value.includes(file.type)) {
     emit('select-file', file)
   } else {

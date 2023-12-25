@@ -41,13 +41,20 @@ export const useMainStore = defineStore('main', {
     _getIndex(itemId: number) {
       return this.map.get(itemId) ?? -1
     },
-    // 添加 id 到 index 的映射
+    // 设置 id 到 index 的映射
     _setIndex(itemId: number, index: number) {
       this.map.set(itemId, index)
     },
     // 移除 id 到 index 的映射
     _removeIndex(itemId: number) {
       this.map.delete(itemId)
+    },
+    getSearchItem(itemId: number | string) {
+      if (typeof itemId === 'string') {
+        itemId = parseInt(itemId)
+      }
+      const index = this._getIndex(itemId)
+      return this.searchItems[index]
     },
     moveSearchItems(fromItemId: number, toItemId: number) {
       const fromIndex = this._getIndex(fromItemId)
@@ -57,13 +64,6 @@ export const useMainStore = defineStore('main', {
         this._setIndex(this.searchItems[newIndex].id, newIndex)
       })
       search.saveItemIds(this.searchItems.map((item) => item.id))
-    },
-    getSearchItem(itemId: number | string) {
-      if (typeof itemId === 'string') {
-        itemId = parseInt(itemId)
-      }
-      const index = this._getIndex(itemId)
-      return this.searchItems[index]
     },
     addSearchItem(item: SearchItemModel) {
       SearchItemModel.checkSearchItem(item)
@@ -89,6 +89,10 @@ export const useMainStore = defineStore('main', {
 
       const item = this.searchItems[index]
       this.searchItems.splice(index, 1)
+      // 更新 map 到 index 的映射
+      this.searchItems.forEach((item, index) => {
+        this._setIndex(item.id, index)
+      })
       this._removeIndex(item.id)
       search.removeItem(item.id)
       feature.removeFeature(item.id)

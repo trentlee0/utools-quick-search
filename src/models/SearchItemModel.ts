@@ -88,6 +88,7 @@ export default class SearchItemModel {
   app?: string
   platform?: Platform
   categoryId: string
+  isOver?: boolean
 
   constructor(id?: number) {
     // 使用自定义 ID 或时间戳作为 ID

@@ -12,6 +12,12 @@ export function nonePage() {
   // utools.showMainWindow()
 }
 
+const replaced = encodeURIComponent('{query}')
+
 export function buildURL(url: string, query?: string) {
-  return encodeURI(query === undefined ? url : url.replace('{query}', query))
+  if (query === undefined) {
+    return encodeURI(url)
+  } else {
+    return encodeURI(url).replace(replaced, encodeURIComponent(query))
+  }
 }

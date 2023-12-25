@@ -3,7 +3,7 @@
     <Transition name="dialog">
       <div class="dialog-mask" v-if="modelValue" @click="handleOutsideClick">
         <div class="dialog-container" @click.stop>
-          <div class="bg-white dark:bg-neutral-800">
+          <div class="rounded-md bg-white dark:bg-neutral-800">
             <div class="flex items-center px-4 py-3">
               <slot name="header">
                 <Icon

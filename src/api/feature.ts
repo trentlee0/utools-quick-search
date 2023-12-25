@@ -27,6 +27,14 @@ export function addFeature(item: SearchItemModel) {
       maxLength: 150
     })
   }
+  if (item.isOver) {
+    cmds.push({
+      type: 'over',
+      label: title,
+      minLength: 1,
+      maxLength: 500
+    })
+  }
   utools.setFeature({
     code: id.toString(),
     icon: icon || 'logo.png',

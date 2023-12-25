@@ -29,6 +29,8 @@ utools.onPluginEnter((action) => {
 
   if (type === 'regex') {
     openQuery(buildURL(url, payload.replace(`${keyword} `, '')), app)
+  } else if (type === 'over') {
+    openQuery(buildURL(url, payload), app)
   } else if (url.lastIndexOf('{query}') === -1) {
     openQuery(buildURL(url), app)
   } else {
