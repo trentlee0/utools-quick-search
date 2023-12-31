@@ -3,7 +3,7 @@
     :class="`${ScaleMap[scale]} ${SideMap[side]}`"
     :src="src"
     :alt="alt"
-    draggable="false"
+    :draggable="draggable"
   />
 </template>
 
@@ -30,10 +30,12 @@ withDefaults(
     alt?: string
     scale?: keyof typeof ScaleMap
     side?: keyof typeof SideMap
+    draggable?: boolean
   }>(),
   {
     scale: 'contain',
-    side: 'center'
+    side: 'center',
+    draggable: false
   }
 )
 </script>

@@ -7,6 +7,7 @@
         <div class="relative flex justify-center">
           <SelectImageInput
             :src="data.icon"
+            :disabled="isBuiltinItem"
             @select-file="handleSelectIcon"
             @detach-file="handleDetachIcon"
           ></SelectImageInput>
@@ -14,11 +15,11 @@
           <div class="absolute right-0 top-0 flex h-full items-center">
             <div
               class="cursor-pointer select-none"
-              v-show="isWebURL"
-              title="从 URL 下载图标"
+              v-show="isWebURL && !isBuiltinItem"
+              title="使用 URL 图标"
               @click="handleDownloadFavicon"
             >
-              <Icon :icon="mdiDownload" :real-size="20"></Icon>
+              <Icon :icon="mdiWebSync" :real-size="20"></Icon>
             </div>
           </div>
         </div>
@@ -31,6 +32,7 @@
           @blur="checkProp(rules, 'title', data.title)"
           :append-icon="isBuiltinItem ? mdiPackage : undefined"
           append-icon-title="内置搜索项"
+          :disabled="isBuiltinItem"
         ></TextField>
       </BasicFormItem>
 
@@ -38,6 +40,7 @@
         <TextField
           v-model="data.subtitle"
           placeholder="默认应用打开"
+          :disabled="isBuiltinItem"
         ></TextField>
       </BasicFormItem>
 
@@ -178,7 +181,7 @@ import BasicForm from '@/components/info/BasicForm.vue'
 import SelectImageInput from '@/components/info/SelectImageInput.vue'
 import SearchItemModel from '@/models/SearchItemModel'
 import CategoryModel from '@/models/CategoryModel'
-import { reactive, ref, computed, onActivated, onDeactivated, toRaw } from 'vue'
+import { reactive, ref, computed, onActivated, onDeactivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCategoryStore, useMainStore } from '@/store'
 import { deepCopy } from '@/utils/common'
@@ -188,7 +191,8 @@ import {
   mdiMagnify,
   mdiPackage,
   mdiCodeTags,
-  mdiDownload
+  mdiWebSync,
+  mdiWebBox
 } from '@mdi/js'
 import { FileConstant } from '@/constant'
 import { encodeToBase64 } from '@/utils/files'

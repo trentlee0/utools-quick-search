@@ -1,21 +1,21 @@
 <template>
   <div
     class="flex w-full items-center justify-center"
-    @dragover.prevent="dragging = true"
-    @dragenter="dragging = true"
-    @dragleave="dragging = false"
+    @dragover.prevent="handleDragEnter"
+    @dragenter="handleDragEnter"
+    @dragleave="handleDragLeave"
     @drop.prevent="handleDropEvent"
     :class="{ 'bg-neutral-200 dark:bg-neutral-600': dragging }"
   >
     <div
-      class="relative h-14 w-14 cursor-pointer"
+      class="relative h-14 w-14 cursor-pointer select-none"
       title="选择图标，可拖拽图片到此"
       @click="openFileDialog"
     >
       <div
         class="absolute -left-2 -top-2 flex h-4 w-4 cursor-default items-center justify-center rounded-full bg-neutral-100 text-neutral-500 shadow-xl"
         @click.stop="handleDetachClick"
-        v-show="!!src"
+        v-show="!!src && !disabled"
       >
         <Icon :icon="mdiCloseThick" :real-size="10"></Icon>
       </div>
@@ -25,6 +25,7 @@
         :src="src"
         scale="contain"
         alt="图标"
+        :draggable="disabled"
       ></Image>
       <div
         v-show="!src"
@@ -49,9 +50,10 @@ import Icon from '@/components/common/Icon.vue'
 import { ref } from 'vue'
 import { mdiCloseThick, mdiImagePlusOutline } from '@mdi/js'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     src?: string
+    disabled?: boolean
   }>(),
   {
     src: ''
@@ -62,7 +64,19 @@ const acceptTypes = ref(['image/png', 'image/jpeg'].join(','))
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 function openFileDialog() {
-  fileInputRef.value?.click()
+  if (!props.disabled) {
+    fileInputRef.value?.click()
+  }
+}
+
+function handleDragEnter() {
+  if (props.disabled) return
+  dragging.value = true
+}
+
+function handleDragLeave() {
+  if (props.disabled) return
+  dragging.value = false
 }
 
 const emit = defineEmits(['select-file', 'detach-file'])
@@ -73,6 +87,8 @@ function handleSelectFile(e: Event) {
 
 const dragging = ref(false)
 function handleDropEvent(e: DragEvent) {
+  if (props.disabled) return
+
   dragging.value = false
   const file = e.dataTransfer!.files[0]
   if (file.type && acceptTypes.value.includes(file.type)) {
