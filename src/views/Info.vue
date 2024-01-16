@@ -115,7 +115,7 @@
         </Btn>
 
         <Btn
-          class="mt-4 w-full bg-red-500 text-white"
+          class="mt-4 mb-2 w-full bg-red-500 text-white"
           @click="deleteDialog = true"
           v-if="op === 'update' && !isDefaultSearchItem(searchItemId)"
         >
