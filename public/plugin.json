@@ -13,6 +13,17 @@
   },
   "features": [
     {
+      "code": "open-url",
+      "explain": "默认应用打开 URL",
+      "cmds": [
+        {
+          "type": "regex",
+          "label": "打开 URL",
+          "match": "/^[a-z\\-A-Z]+:\/\/(.+)$/"
+        }
+      ]
+    },
+    {
       "code": "quick-search",
       "explain": "Quick Search 设置",
       "cmds": [

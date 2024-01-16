@@ -24,6 +24,11 @@ utools.onPluginEnter((action) => {
 
   state.code = code
   if (code === FeatureCode.QUICK_SEARCH) return
+  if (code === FeatureCode.OPEN_URL) {
+    const url = payload as string
+    openQuery(/(%[0-9a-zA-Z]{2})+/.test(url) ? url : encodeURI(url))
+    return
+  }
 
   const { url, app, keyword } = mainStore.getSearchItem(code)
 

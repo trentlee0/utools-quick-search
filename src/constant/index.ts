@@ -5,7 +5,8 @@ export enum StoreKey {
 }
 
 export enum FeatureCode {
-  QUICK_SEARCH = 'quick-search'
+  QUICK_SEARCH = 'quick-search',
+  OPEN_URL = 'open-url'
 }
 
 export namespace FileConstant {
