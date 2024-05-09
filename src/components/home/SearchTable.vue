@@ -1,7 +1,7 @@
 <template>
   <div class="h-full w-full overflow-y-auto overflow-x-hidden">
     <table class="w-full table-fixed">
-      <thead class="top-0 z-10 bg-white text-sm dark:bg-utools-black">
+      <thead class="top-0 z-10 bg-gray-100 text-sm dark:bg-utools-black">
         <tr class="h-7">
           <th class="table-head w-4/12 pl-4 pr-2">名称</th>
           <th class="table-head w-5/12">URL</th>
@@ -14,7 +14,7 @@
         <tr
           v-for="(row, index) in table"
           :key="`${row.title}-${index}`"
-          class="h-14 transition duration-300 hover:bg-gray-100 dark:hover:bg-neutral-700"
+          class="h-14 transition duration-300 hover:bg-gray-200 dark:hover:bg-neutral-700"
           :class="{
             'bg-gray-300 dark:bg-neutral-500': hoverIndex === index,
             'row-unchecked': row.enabled === false
