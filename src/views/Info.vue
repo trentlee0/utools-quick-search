@@ -68,25 +68,26 @@
         </TextField>
       </BasicFormItem>
 
-      <BasicFormItem
-        label="搜索前缀"
-        title="直接在主搜索框输入 `搜索前缀 <搜索关键词>` 即可搜索（需要 URL 包含 `{query}`）"
-        :verify="rules.keyword.verify"
-      >
-        <TextField
-          :disabled="!isQueryItem"
-          v-model="data.keyword"
-          @blur="checkProp(rules, 'keyword', data.keyword)"
+      <template v-if="isQueryItem">
+        <BasicFormItem
+          label="搜索前缀"
+          title="直接在主搜索框输入 `搜索前缀 <搜索关键词>` 即可搜索（需要 URL 包含 `{query}`）"
+          :verify="rules.keyword.verify"
         >
-        </TextField>
-      </BasicFormItem>
+          <TextField
+            v-model="data.keyword"
+            @blur="checkProp(rules, 'keyword', data.keyword)"
+          >
+          </TextField>
+        </BasicFormItem>
 
-      <BasicFormItem label="默认搜索" title="在主搜索框匹配任何文本默认显示">
-        <Checkbox
-          :model-value="data.isOver"
-          @click="data.isOver = !data.isOver"
-        ></Checkbox>
-      </BasicFormItem>
+        <BasicFormItem label="默认搜索" title="在主搜索框匹配任何文本默认显示">
+          <Checkbox
+            :model-value="data.isOver"
+            @click="data.isOver = !data.isOver"
+          ></Checkbox>
+        </BasicFormItem>
+      </template>
 
       <BasicFormItem label="分类">
         <div class="flex items-center">

@@ -27,8 +27,9 @@
       "code": "quick-search",
       "explain": "Quick Search 设置",
       "cmds": [
+        "Quick Search",
         "Quick Search Setting",
-        "快速搜索设置"
+        "Quick Search 设置"
       ]
     }
   ]
