@@ -7,6 +7,7 @@ import { FeatureCode } from '@/constant'
 import { buildURL, nonePage } from '@/utils/common'
 import { openQuery } from './preload'
 import { Action } from 'utools-utils/type'
+import CategoryModel from './models/CategoryModel'
 
 createApp(App).use(pinia).use(router).mount('#app')
 
@@ -23,7 +24,21 @@ utools.onPluginEnter((action) => {
   const { code, type, payload } = action as Action
 
   state.code = code
-  if (code === FeatureCode.QUICK_SEARCH) return
+  if (code === FeatureCode.QUICK_SEARCH) {
+    router.replace('/')
+    return
+  }
+  if (code === FeatureCode.ADD_ITEM) {
+    const to = `/info/categories/${CategoryModel.DEFAULT.id}/items/`
+    if (action.type === 'window') {
+      utools.readCurrentBrowserUrl().then((url) => {
+        router.push(to + `window-${encodeURIComponent(url)}`)
+      })
+    } else {
+      router.push(to)
+    }
+    return
+  }
   if (code === FeatureCode.OPEN_URL) {
     const url = payload as string
     openQuery(/(%[0-9a-zA-Z]{2})+/.test(url) ? url : encodeURI(url))

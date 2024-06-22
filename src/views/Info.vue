@@ -182,7 +182,14 @@ import BasicForm from '@/components/info/BasicForm.vue'
 import SelectImageInput from '@/components/info/SelectImageInput.vue'
 import SearchItemModel from '@/models/SearchItemModel'
 import CategoryModel from '@/models/CategoryModel'
-import { reactive, ref, computed, onActivated, onDeactivated } from 'vue'
+import {
+  reactive,
+  ref,
+  computed,
+  onActivated,
+  onDeactivated,
+  watchEffect
+} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCategoryStore, useMainStore } from '@/store'
 import { deepCopy } from '@/utils/common'
@@ -192,8 +199,7 @@ import {
   mdiMagnify,
   mdiPackage,
   mdiCodeTags,
-  mdiWebSync,
-  mdiWebBox
+  mdiWebSync
 } from '@mdi/js'
 import { FileConstant } from '@/constant'
 import { encodeToBase64 } from '@/utils/files'
@@ -302,21 +308,27 @@ function isDefaultSearchItem(itemId: number) {
 
 const titleFieldRef = ref<InstanceType<typeof TextField> | null>(null)
 
-onActivated(() => {
-  const { itemId, categoryId } = route.params
+watchEffect(() => {
+  if (route.name !== 'Info') return
+
+  const itemId = route.params.itemId as string
+  const categoryId = route.params.categoryId as string
 
   // 通过搜索项 ID 区分页面作用
-  if (itemId) {
+  if (/^[0-9]+$/.test(itemId)) {
     op.value = 'update'
-    searchItemId.value = parseInt(itemId as string)
+    searchItemId.value = parseInt(itemId)
     data.value = deepCopy(mainStore.getSearchItem(searchItemId.value))
     data.value.enabled = data.value.enabled !== false
   } else {
     titleFieldRef.value?.focus()
     op.value = 'add'
     data.value = new SearchItemModel()
+    if (itemId.startsWith('window-')) {
+      data.value.url = decodeURIComponent(itemId.replace('window-', ''))
+    }
     // 设置默认分类 ID
-    data.value.categoryId = categoryId as string
+    data.value.categoryId = categoryId
   }
 })
 // 变量恢复默认值

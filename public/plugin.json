@@ -24,6 +24,33 @@
       ]
     },
     {
+      "code": "add-item",
+      "explain": "添加搜索项",
+      "cmds": [
+        "Add Quick Search Item",
+        "添加搜索项",
+        {
+          "type": "window",
+          "label": "添加网址",
+          "match": {
+            "app": [
+              "Safari.app",
+              "Google Chrome.app",
+              "Microsoft Edge.app",
+              "Opera.app",
+              "Vivaldi.app",
+              "Brave Browser.app",
+              "chrome.exe",
+              "firefox.exe",
+              "msedge.exe",
+              "opera.exe",
+              "brave.exe"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "code": "quick-search",
       "explain": "Quick Search 设置",
       "cmds": [
