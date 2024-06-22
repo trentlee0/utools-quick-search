@@ -2,8 +2,8 @@
   <div
     class="flex w-full items-center justify-center"
     @dragover.prevent="handleDragEnter"
-    @dragenter="handleDragEnter"
-    @dragleave="handleDragLeave"
+    @dragenter.prevent="handleDragEnter"
+    @dragleave.prevent="handleDragLeave"
     @drop.prevent="handleDropEvent"
     :class="{ 'bg-neutral-200 dark:bg-neutral-600': dragging }"
   >
@@ -25,7 +25,7 @@
         :src="src"
         scale="contain"
         alt="图标"
-        :draggable="disabled"
+        :draggable="true"
       ></Image>
       <div
         v-show="!src"
@@ -85,12 +85,34 @@ function handleSelectFile(e: Event) {
   emit('select-file', file)
 }
 
+function getDropData(e: DragEvent) {
+  if (!e.dataTransfer?.types.length) return null
+
+  for (let i = 0; i < e.dataTransfer.types.length; i++) {
+    const type = e.dataTransfer.types[i]
+    if (type === 'Files') {
+      return { type: 'Files', data: e.dataTransfer.files }
+    } else {
+      return { type, data: e.dataTransfer.getData(type) }
+    }
+  }
+  return null
+}
+
 const dragging = ref(false)
 function handleDropEvent(e: DragEvent) {
   if (props.disabled) return
 
   dragging.value = false
-  const file = e.dataTransfer!.files[0]
+
+  const drop = getDropData(e)
+  if (!drop) return
+  if (drop.type !== 'Files') {
+    alert('仅支持图片文件！')
+    return
+  }
+
+  const file = (drop.data as FileList)[0]
   if (file.type && acceptTypes.value.includes(file.type)) {
     emit('select-file', file)
   } else {
