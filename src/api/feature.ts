@@ -55,3 +55,10 @@ export function removeFeature(searchItemId: number | string) {
   }
   utools.removeFeature(searchItemId)
 }
+
+export function removeFeatures() {
+  const features = utools.getFeatures()
+  for (const feature of features) {
+    utools.removeFeature(feature.code)
+  }
+}

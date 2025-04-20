@@ -21,7 +21,8 @@ export const useMainStore = defineStore('main', {
 
     const searchItems = search.getList()
 
-    // 生成 Feature
+    // 先移除所有，再生成 Feature
+    feature.removeFeatures()
     for (const item of searchItems) {
       if (item.enabled === false) continue
       feature.addFeature(item)
