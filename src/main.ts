@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+import Application from './App.vue'
 import './style.css'
 import router from './router'
 import pinia, { useMainStore } from './store'
@@ -9,7 +9,8 @@ import { openQuery } from './preload'
 import { Action } from 'utools-utils/type'
 import CategoryModel from './models/CategoryModel'
 
-createApp(App).use(pinia).use(router).mount('#app')
+let application = createApp(Application).use(pinia).use(router)
+application.mount('#app')
 
 const mainStore = useMainStore()
 
@@ -20,7 +21,14 @@ const state = {
   word: <string | undefined>''
 }
 
+utools.onPluginOut(() => {
+  application.unmount()
+})
+
 utools.onPluginEnter((action) => {
+  application.unmount()
+  application = createApp(Application).use(pinia).use(router)
+  application.mount('#app')
   const { code, type, payload } = action as Action
 
   state.code = code
