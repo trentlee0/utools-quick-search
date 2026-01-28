@@ -8,7 +8,6 @@ import {
   readCurrentBrowserUrl,
   sharp
 } from 'utools-api'
-import https from 'https'
 import { hideAndOutPlugin, WindowPayload } from 'utools-utils'
 import {
   execCommand,
@@ -18,6 +17,7 @@ import {
 import decodeIco from 'decode-ico'
 import { fileTypeFromBuffer } from 'file-type'
 import { FileConstant } from './constant'
+import { request } from './utils/request'
 
 function option(name: string, value?: string) {
   return value ? `${name} "${value}"` : ''
@@ -55,16 +55,11 @@ export function existsFile(path: string) {
   return path ? existsSync(path) : false
 }
 
-export function getHtmlTitle(url: string) {
-  return new Promise<string | null>((resolve, reject) => {
-    https.get(url, (res) => {
-      const body: Uint8Array[] = []
-      res.on('data', (chunk) => body.push(chunk))
-      res.on('end', () => {
-        resolve(/<title>(.*?)<\/title>/.exec(body.toString())?.[1] ?? null)
-      })
-    })
-  })
+export async function getHtmlTitle(url: string): Promise<string | null> {
+  const res = await request(url)
+  const html = await res.text()
+  const title = /<title>(.*?)<\/title>/.exec(html)?.[1]
+  return title ?? null
 }
 
 function sharpsFromIco(
@@ -126,17 +121,13 @@ export async function getFavicon(url: string): Promise<string | null> {
   const urlObject = new URL(url)
   const requestUrl = `https://cn.cravatar.com/favicon/api/index.php?url=${urlObject.hostname}`
 
-  const response = await fetch(requestUrl, {
+  const response = await request(requestUrl, {
     redirect: 'follow',
     headers: {
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     }
   })
-
-  if (!response.ok) {
-    throw new Error(`HTTP 错误: ${response.status}`)
-  }
 
   const arrayBuffer = await response.arrayBuffer()
   const fileType = await fileTypeFromBuffer(arrayBuffer)
@@ -255,8 +246,11 @@ async function readCurrentZenBrowserTab(window: number = 1) {
       end tell
     end tell`
   const { stdout } = await execAppleScript(script)
-  const [url, title] = stdout.trim().split('\n')
-  return { url: url.indexOf('://') === -1 ? `https://${url}` : url, title }
+  const [url, title] = stdout.split('\n')
+  return {
+    url: url.indexOf('://') === -1 && url ? `https://${url}` : url,
+    title
+  }
 }
 
 export async function getCurrentBrowserTab(windowPayload: WindowPayload) {

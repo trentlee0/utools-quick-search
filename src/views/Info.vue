@@ -293,7 +293,8 @@ import {
   deepCopy,
   simpleTemplate,
   regexpTemplate,
-  createRegExp
+  createRegExp,
+  parsePageTitle
 } from '@/utils/common'
 import { checkFormAsync, checkProp, isValidRegex, Rules } from '@/utils/check'
 import {
@@ -312,10 +313,10 @@ import { encodeToBase64 } from '@/utils/files'
 import {
   existsFile,
   getFavicon,
-  getHtmlTitle,
   getCurrentBrowserTab,
   convertImageToPngBase64,
-  openCommand
+  openCommand,
+  getHtmlTitle
 } from '@/preload'
 import { WindowAction } from 'utools-utils'
 
@@ -400,17 +401,9 @@ async function handleURLBlur() {
     if (!data.value.title) {
       const htmlTitle = await getHtmlTitle(data.value.url)
       if (htmlTitle) {
-        if (htmlTitle.includes(' - ')) {
-          const [title, subtitle] = htmlTitle.split(' - ')
-          data.value.title = title.trim()
-          data.value.subtitle = subtitle.trim()
-        } else if (htmlTitle.includes(' | ')) {
-          const [subtitle, title] = htmlTitle.split(' | ')
-          data.value.title = title.trim()
-          data.value.subtitle = subtitle.trim()
-        } else {
-          data.value.title = htmlTitle
-        }
+        const { title, subtitle } = parsePageTitle(htmlTitle)
+        data.value.title = title
+        data.value.subtitle = subtitle
         rules['title'].verify.show = false
       }
     }
@@ -508,8 +501,11 @@ watchEffect(async () => {
     if (itemId === 'add-item-from-browser') {
       const action = mainStore.action as WindowAction
       const tab = await getCurrentBrowserTab(action.payload)
+      console.log(tab)
       data.value.url = tab.url
-      data.value.title = tab.title
+      const { title, subtitle } = parsePageTitle(tab.title)
+      data.value.title = title
+      data.value.subtitle = subtitle
     }
   }
 })

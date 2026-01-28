@@ -71,3 +71,24 @@ export function regexpTemplate(
   }
   return template
 }
+
+export function parsePageTitle(pageTitle: string) {
+  if (pageTitle.includes(' - ')) {
+    const [title, subtitle] = pageTitle.split(' - ')
+    return {
+      title: title.trim(),
+      subtitle: subtitle.trim()
+    }
+  }
+  if (pageTitle.includes(' | ')) {
+    const [subtitle, title] = pageTitle.split(' | ')
+    return {
+      title: title.trim(),
+      subtitle: subtitle.trim()
+    }
+  }
+  return {
+    title: pageTitle,
+    subtitle: ''
+  }
+}
