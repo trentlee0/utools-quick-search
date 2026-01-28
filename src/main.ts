@@ -33,7 +33,7 @@ utools.onPluginEnter((a) => {
   const action = a as Action
 
   state.code = action.code
-  if (action.code === FeatureCode.QUICK_OPEN) {
+  if (action.code === FeatureCode.QUICK_OPENER) {
     router.replace('/')
   } else if (action.code === FeatureCode.ADD_ITEM) {
     let to = `/info/categories/${CategoryModel.DEFAULT.id}/items/`
@@ -72,7 +72,7 @@ utools.onPluginEnter((a) => {
 })
 
 window.addEventListener('keydown', (e) => {
-  if (state.code === FeatureCode.QUICK_OPEN) return
+  if (state.code === FeatureCode.QUICK_OPENER) return
 
   if (e.key === 'Enter') {
     openURL(simpleTemplate(state.url, { query: state.word }), state.app)

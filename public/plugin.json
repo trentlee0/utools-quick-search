@@ -1,6 +1,6 @@
 {
-  "name": "Quick Open",
-  "pluginName": "Quick Open",
+  "name": "Quick Opener",
+  "pluginName": "Quick Opener",
   "description": "通过 URL 快速搜索、打开网页和应用",
   "version": "1.0.0",
   "author": "Trent0",
@@ -52,12 +52,12 @@
       ]
     },
     {
-      "code": "quick-open",
-      "explain": "Quick Open 设置",
+      "code": "quick-opener",
+      "explain": "Quick Opener 设置",
       "cmds": [
-        "Quick Open",
-        "Quick Open Setting",
-        "Quick Open 设置"
+        "Quick Opener",
+        "Quick Opener Setting",
+        "Quick Opener 设置"
       ]
     }
   ]
