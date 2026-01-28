@@ -17,6 +17,7 @@ import {
 } from 'utools-utils/preload'
 import decodeIco from 'decode-ico'
 import { fileTypeFromBuffer } from 'file-type'
+import { FileConstant } from './constant'
 
 function option(name: string, value?: string) {
   return value ? `${name} "${value}"` : ''
@@ -92,7 +93,18 @@ async function convertIcoToPng(
   icoBuffer: ArrayBuffer | Int8Array | Uint8Array | Uint8ClampedArray
 ): Promise<Buffer> {
   const sharpInstances = sharpsFromIco(icoBuffer)
-  const selectedSharp = sharpInstances[0] as Sharp
+  let selectedIndex = 0
+  let maxWidth = 0
+  for (let i = 0; i < sharpInstances.length; i++) {
+    const metadata = await sharpInstances[i].metadata()
+    if (metadata.size && metadata.size <= FileConstant.ICON_FILE_SIZE_LIMIT) {
+      if (metadata.width && metadata.width > maxWidth) {
+        maxWidth = metadata.width
+        selectedIndex = i
+      }
+    }
+  }
+  const selectedSharp = sharpInstances[selectedIndex]
   return await selectedSharp.png().toBuffer()
 }
 

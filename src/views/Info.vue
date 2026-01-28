@@ -175,7 +175,7 @@
         </Btn>
 
         <Btn
-          class="mt-4 mb-2 w-full bg-red-500 text-white"
+          class="mb-2 mt-4 w-full bg-red-500 text-white"
           @click="deleteDialog = true"
           v-if="op === 'update' && !isDefaultSearchItem(searchItemId)"
         >
@@ -587,10 +587,12 @@ function deleteSearchItem() {
 }
 
 async function handleSelectIcon(file: File) {
-  // 限制图片的大小，单位 MB
-  const limit = 0.512
-  if (file.size > limit * FileConstant.MB) {
-    alert(`图片大小不能超过 ${limit} MB！`)
+  if (file.size > FileConstant.ICON_FILE_SIZE_LIMIT) {
+    alert(
+      `图片大小不能超过 ${
+        FileConstant.ICON_FILE_SIZE_LIMIT / FileConstant.MB
+      } MB！`
+    )
     return
   }
   if (FileConstant.FEATURE_IMAGE_TYPES.includes(file.type)) {
