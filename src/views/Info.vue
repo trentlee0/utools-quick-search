@@ -1,6 +1,6 @@
 <template>
   <div class="w-full px-2">
-    <Header :title="op === 'add' ? '添加搜索项' : '修改搜索项'"></Header>
+    <Header :title="op === 'add' ? '添加项目' : '修改项目'"></Header>
 
     <BasicForm class="mt-10">
       <BasicFormItem label="图标">
@@ -13,14 +13,29 @@
           ></SelectImageInput>
 
           <div class="absolute right-0 top-0 flex h-full items-center">
-            <div
-              class="cursor-pointer select-none"
-              v-show="isWebURL && !isBuiltinItem"
-              title="使用 URL 图标"
-              @click="handleDownloadFavicon"
-            >
-              <Icon :icon="mdiWebSync" :real-size="20"></Icon>
-            </div>
+            <template v-if="!isBuiltinItem">
+              <div
+                class="cursor-pointer select-none"
+                v-show="isWebURL"
+                title="获取 URL 的图标"
+                @click="handleDownloadFavicon"
+              >
+                <Icon
+                  ref="getFaviconIconRef"
+                  :icon="getFaviconIconLoading ? mdiSync : mdiWebSync"
+                  :real-size="20"
+                  :loading="getFaviconIconLoading"
+                ></Icon>
+              </div>
+              <div
+                class="ml-1 cursor-pointer select-none"
+                v-show="isAppExist"
+                title="获取应用的图标"
+                @click="handleGetAppIcon"
+              >
+                <Icon :icon="mdiApplicationOutline" :real-size="20"></Icon>
+              </div>
+            </template>
           </div>
         </div>
       </BasicFormItem>
@@ -28,10 +43,11 @@
       <BasicFormItem label="名称" required :verify="rules.title.verify">
         <TextField
           ref="titleFieldRef"
+          placeholder="指令名称"
           v-model="data.title"
           @blur="checkProp(rules, 'title', data.title)"
           :append-icon="isBuiltinItem ? mdiPackage : undefined"
-          append-icon-title="内置搜索项"
+          append-icon-title="内置项目"
           :disabled="isBuiltinItem"
         ></TextField>
       </BasicFormItem>
@@ -39,7 +55,7 @@
       <BasicFormItem label="子标题">
         <TextField
           v-model="data.subtitle"
-          placeholder="默认应用打开"
+          :placeholder="`指令描述，默认为“${ItemModel.DEFAULT_SUBTITLE}”`"
           :disabled="isBuiltinItem"
         ></TextField>
       </BasicFormItem>
@@ -48,44 +64,81 @@
         label="URL"
         required
         :verify="rules.url.verify"
-        title="要使用搜索，请用 `{query}` 替换搜索关键词"
+        title="要使项目根据关键词进行搜索：
+- 默认情况，请用 `{query}` 替换关键词；
+- 而对于自定义匹配，需要用 `${n}` 替换关键词中的匹配项，其表示正则表达式中第 n 个或命名为 n 的匹配分组。"
       >
         <TextField
           v-model="data.url"
+          placeholder="http(s):// 开头的网址，或者 URL Scheme"
           @blur="handleURLBlur"
-          :append-icon="isQueryItem ? mdiMagnify : ''"
+          :append-icon="
+            searchPatternType === 'query'
+              ? mdiMagnify
+              : searchPatternType === 'regex'
+              ? mdiRegex
+              : ''
+          "
           :disabled="isBuiltinItem"
         >
-          <template #append v-if="isEncodedURL">
-            <div
-              class="cursor-pointer"
-              title="URL 解码"
-              @click="handleDecodeURL"
-            >
-              <Icon :icon="mdiCodeTags"></Icon>
+          <template #append v-if="isEncodedURL || searchPatternType">
+            <div class="flex items-center justify-center">
+              <div
+                v-if="isEncodedURL"
+                class="flex w-[24px] cursor-pointer items-center justify-center"
+                title="URL 解码"
+                @click="handleDecodeURL"
+              >
+                <Icon :real-size="22" :icon="mdiCodeTags"></Icon>
+              </div>
+              <div class="w-2" v-if="isEncodedURL && searchPatternType"></div>
+              <div
+                v-if="searchPatternType"
+                class="flex w-[24px] cursor-pointer items-center justify-center"
+                title="测试 URL"
+                @click="testURLDialog = true"
+              >
+                <Icon :real-size="20" :icon="mdiOpenInNew"></Icon>
+              </div>
             </div>
           </template>
         </TextField>
       </BasicFormItem>
 
-      <template v-if="isQueryItem">
+      <template v-if="searchPatternType === 'query'">
         <BasicFormItem
           label="搜索前缀"
-          title="直接在主搜索框输入 `搜索前缀 <搜索关键词>` 即可搜索（需要 URL 包含 `{query}`）"
+          title="直接在主搜索框输入 `<搜索前缀> <搜索关键词>` 即可进入搜索"
           :verify="rules.keyword.verify"
         >
           <TextField
             v-model="data.keyword"
+            placeholder="搜索前缀"
             @blur="checkProp(rules, 'keyword', data.keyword)"
           >
           </TextField>
         </BasicFormItem>
-
         <BasicFormItem label="默认搜索" title="在主搜索框匹配任何文本默认显示">
           <Checkbox
             :model-value="data.isOver"
             @click="data.isOver = !data.isOver"
           ></Checkbox>
+        </BasicFormItem>
+      </template>
+
+      <template v-if="searchPatternType === 'regex'">
+        <BasicFormItem
+          label="自定义匹配"
+          title="自定义匹配正则表达式"
+          required
+          :verify="rules.customMatch.verify"
+        >
+          <TextField
+            v-model="data.customMatch"
+            placeholder="正则表达式"
+            @blur="checkProp(rules, 'customMatch', data.customMatch)"
+          >
+          </TextField>
         </BasicFormItem>
       </template>
 
@@ -102,7 +155,13 @@
         </div>
       </BasicFormItem>
 
-      <BasicFormItem label="打开方式" :verify="rules.app.verify">
+      <BasicFormItem
+        label="打开方式"
+        :verify="{
+          ...rules.app.verify,
+          show: data.app?.trim() ? !isAppExist : false
+        }"
+      >
         <SelectAppInput
           v-model="data.app"
           @blur="checkProp(rules, 'app', data.app)"
@@ -124,6 +183,41 @@
         </Btn>
       </BasicFormItem>
     </BasicForm>
+
+    <Dialog v-model="testURLDialog" title="测试 URL" btn-type="close">
+      <TextField
+        ref="testURLInputRef"
+        :placeholder="
+          searchPatternType === 'regex' ? '输入匹配正则的文本' : '输入关键词'
+        "
+        v-model="testURLInput"
+        @keydown.enter="
+          !$event.isComposing && isTestURLInputValid && handleTestURL()
+        "
+      ></TextField>
+      <div class="mt-2 w-72">
+        <template v-if="isTestURLInputValid">
+          <div class="cursor-default">测试时打开 URL：</div>
+          <div>{{ handledTestURL }}</div>
+        </template>
+      </div>
+      <template #footer>
+        <div class="flex justify-end px-4 pb-3 text-sm">
+          <Btn
+            class="text-white shadow-sm"
+            :class="
+              isTestURLInputValid
+                ? 'bg-blue-500'
+                : 'bg-neutral-200 dark:bg-neutral-700'
+            "
+            @click="handleTestURL"
+            :disabled="!isTestURLInputValid"
+          >
+            打开
+          </Btn>
+        </div>
+      </template>
+    </Dialog>
 
     <Dialog v-model="deleteDialog" title="提示" @confirm="deleteSearchItem">
       <div class="w-52">确定要删除吗？</div>
@@ -176,35 +270,54 @@ import Icon from '@/components/common/Icon.vue'
 import Header from '@/components/common/Header.vue'
 import Select from '@/components/common/Select.vue'
 import Dialog from '@/components/common/Dialog.vue'
+import Checkbox from '@/components/common/Checkbox.vue'
 import SelectAppInput from '@/components/info/SelectAppInput.vue'
 import BasicFormItem from '@/components/info/BasicFormItem.vue'
 import BasicForm from '@/components/info/BasicForm.vue'
 import SelectImageInput from '@/components/info/SelectImageInput.vue'
-import SearchItemModel from '@/models/SearchItemModel'
+
+import ItemModel from '@/models/ItemModel'
 import CategoryModel from '@/models/CategoryModel'
 import {
   reactive,
   ref,
   computed,
-  onActivated,
   onDeactivated,
-  watchEffect
+  watchEffect,
+  watch,
+  nextTick
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCategoryStore, useMainStore } from '@/store'
-import { deepCopy } from '@/utils/common'
-import { checkFormAsync, checkProp, Rules } from '@/utils/check'
+import {
+  deepCopy,
+  simpleTemplate,
+  regexpTemplate,
+  createRegExp
+} from '@/utils/common'
+import { checkFormAsync, checkProp, isValidRegex, Rules } from '@/utils/check'
 import {
   mdiShapeOutline,
   mdiMagnify,
   mdiPackage,
   mdiCodeTags,
-  mdiWebSync
+  mdiWebSync,
+  mdiRegex,
+  mdiSync,
+  mdiApplicationOutline,
+  mdiOpenInNew
 } from '@mdi/js'
 import { FileConstant } from '@/constant'
 import { encodeToBase64 } from '@/utils/files'
-import { existsFile, getFavicon, getHtmlTitle } from '@/preload'
-import Checkbox from '@/components/common/Checkbox.vue'
+import {
+  existsFile,
+  getFavicon,
+  getHtmlTitle,
+  getCurrentBrowserTab,
+  convertImageToPngBase64,
+  openCommand
+} from '@/preload'
+import { WindowAction } from 'utools-utils'
 
 const router = useRouter()
 const route = useRoute()
@@ -221,10 +334,65 @@ function handleDeleteCategory(category: CategoryModel, index: number) {
 
 const isBuiltinItem = computed(
   () =>
-    !!SearchItemModel.DEFAULT_SEARCH_ITEMS.find(
-      (item) => item.id === data.value.id
-    )
+    !!ItemModel.DEFAULT_SEARCH_ITEMS.find((item) => item.id === data.value.id)
 )
+
+const testURLInputRef = ref<InstanceType<typeof TextField> | null>(null)
+const testURLDialog = ref(false)
+const testURLInput = ref('')
+const regexSearchPatternRegExp = computed(() => {
+  if (
+    searchPatternType.value === 'regex' &&
+    data.value.customMatch &&
+    isValidRegex(data.value.customMatch)
+  )
+    return createRegExp(data.value.customMatch)
+  return null
+})
+const isTestURLInputValid = computed(() => {
+  if (searchPatternType.value === 'query') return testURLInput.value.length > 0
+  if (searchPatternType.value === 'regex')
+    return regexSearchPatternRegExp.value?.test(testURLInput.value)
+  return true
+})
+
+watch(testURLDialog, (newVal) => {
+  if (newVal) {
+    nextTick(() => {
+      testURLInputRef.value?.focus()
+    })
+  } else {
+    testURLInput.value = ''
+  }
+})
+
+const handledTestURL = computed(() => {
+  if (!testURLDialog.value) return undefined
+
+  if (searchPatternType.value === 'regex') {
+    if (data.value.customMatch) {
+      return regexpTemplate(
+        data.value.url,
+        data.value.customMatch,
+        testURLInput.value
+      )
+    }
+  } else if (searchPatternType.value === 'query') {
+    return simpleTemplate(data.value.url, { query: testURLInput.value })
+  }
+})
+
+function handleTestURL() {
+  if (!data.value.url) return
+
+  try {
+    if (handledTestURL.value) {
+      openCommand(handledTestURL.value, data.value.app)
+    }
+  } catch (e) {
+    alert(e)
+  }
+}
 
 async function handleURLBlur() {
   checkProp(rules, 'url', data.value.url)
@@ -266,9 +434,9 @@ function handleAddCategory() {
   }
 }
 
-const isQueryItem = computed(() => {
-  if (data.value.url.includes('{query}')) return true
-  data.value.keyword = ''
+const searchPatternType = computed(() => {
+  const type = ItemModel.getSearchPatternType(data.value.url)
+  if (type) return type
   return false
 })
 
@@ -280,41 +448,52 @@ function handleDecodeURL() {
 const isWebURL = computed(() => /^https?:\/\/.+/.test(data.value.url))
 async function handleDownloadFavicon() {
   try {
+    getFaviconIconLoading.value = true
     const icon = await getFavicon(data.value.url)
     if (icon) {
       data.value.icon = icon
+      getFaviconIconLoading.value = false
     }
   } catch (err: unknown) {
+    getFaviconIconLoading.value = false
     alert(err)
   }
 }
 
-const op = ref<'update' | 'add'>()
+const isAppExist = computed(
+  () => !!data.value.app?.trim() && existsFile(data.value.app)
+)
+function handleGetAppIcon() {
+  if (isAppExist.value) {
+    data.value.icon = utools.getFileIcon(data.value.app!)
+  }
+}
+
+const op = ref<'update' | 'add'>('update')
 
 const deleteDialog = ref(false)
 const categoryDialog = ref(false)
 const newCategoryName = ref('')
 
 const searchItemId = ref(-1)
-const data = ref(new SearchItemModel())
+const data = ref(new ItemModel())
 
 function isDefaultSearchItem(itemId: number) {
   return (
-    SearchItemModel.DEFAULT_SEARCH_ITEMS.findIndex(
-      (item) => item.id === itemId
-    ) !== -1
+    ItemModel.DEFAULT_SEARCH_ITEMS.findIndex((item) => item.id === itemId) !==
+    -1
   )
 }
 
 const titleFieldRef = ref<InstanceType<typeof TextField> | null>(null)
 
-watchEffect(() => {
+watchEffect(async () => {
   if (route.name !== 'Info') return
 
   const itemId = route.params.itemId as string
   const categoryId = route.params.categoryId as string
 
-  // 通过搜索项 ID 区分页面作用
+  // 通过项目 ID 区分页面作用
   if (/^[0-9]+$/.test(itemId)) {
     op.value = 'update'
     searchItemId.value = parseInt(itemId)
@@ -323,19 +502,27 @@ watchEffect(() => {
   } else {
     titleFieldRef.value?.focus()
     op.value = 'add'
-    data.value = new SearchItemModel()
-    if (itemId.startsWith('window-')) {
-      data.value.url = decodeURIComponent(itemId.replace('window-', ''))
-    }
+    data.value = new ItemModel()
     // 设置默认分类 ID
     data.value.categoryId = categoryId
+    if (itemId === 'add-item-from-browser') {
+      const action = mainStore.action as WindowAction
+      const tab = await getCurrentBrowserTab(action.payload)
+      data.value.url = tab.url
+      data.value.title = tab.title
+    }
   }
 })
+
+const getFaviconIconLoading = ref(false)
 // 变量恢复默认值
 onDeactivated(() => {
+  testURLDialog.value = false
+  testURLInput.value = ''
   deleteDialog.value = false
   categoryDialog.value = false
   newCategoryName.value = ''
+  getFaviconIconLoading.value = false
   for (const key in rules) {
     rules[key].verify.show = false
   }
@@ -344,24 +531,39 @@ onDeactivated(() => {
 const rules = reactive<Rules>({
   title: {
     check: (value?: string) => !!value,
-    verify: { msg: '名称不能为空', show: false }
+    verify: { msg: '名称不能为空' }
   },
   url: {
     check: (value?: string) => !!value,
-    verify: { msg: 'URL 不能为空', show: false }
+    verify: { msg: 'URL 不能为空' }
   },
   app: {
     check: (value?: string) => !value || existsFile(value),
-    verify: { msg: '文件不存在', show: false }
+    verify: { msg: '文件不存在' }
   },
   keyword: {
     check: (value?: string) => !value || /^[a-zA-Z0-9]+$/.test(value),
-    verify: { msg: '搜索前缀只能为字母或数字', show: false }
+    verify: { msg: '搜索前缀只能为字母或数字' }
+  },
+  customMatch: {
+    check: (value?: string) => !!value && isValidRegex(value),
+    verify: {
+      msg: '自定义匹配不能为空，且只能为 JavaScript 风格的正则表达式',
+      disabled: () => searchPatternType.value !== 'regex'
+    }
   }
 })
 
 async function saveSearchItem() {
   try {
+    if (searchPatternType.value === 'query') {
+      data.value.customMatch = ''
+    } else if (searchPatternType.value === 'regex') {
+      data.value.keyword = ''
+    } else {
+      data.value.customMatch = ''
+      data.value.keyword = ''
+    }
     await checkFormAsync(rules, data.value)
     if (op.value === 'add') {
       try {
@@ -391,7 +593,14 @@ async function handleSelectIcon(file: File) {
     alert(`图片大小不能超过 ${limit} MB！`)
     return
   }
-  data.value.icon = await encodeToBase64(file)
+  if (FileConstant.FEATURE_IMAGE_TYPES.includes(file.type)) {
+    data.value.icon = await encodeToBase64(file)
+  } else {
+    data.value.icon = await convertImageToPngBase64(
+      await file.arrayBuffer(),
+      file.type
+    )
+  }
 }
 
 function handleDetachIcon() {

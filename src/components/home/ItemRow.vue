@@ -12,12 +12,12 @@
       <div class="overflow-hidden">
         <div class="truncate text-lg">
           <span>{{ title }}</span>
-          <icon
+          <Icon
             class="ml-1 text-neutral-500 dark:text-neutral-400"
             :icon="mdiPackage"
             size="x-small"
             v-show="builtin"
-          ></icon>
+          ></Icon>
         </div>
         <div
           class="truncate text-sm"
@@ -42,8 +42,19 @@
       {{ categoryName }}
     </div>
   </td>
-  <td class="truncate pr-2">
-    <span>{{ keyword }}</span>
+  <td class="pr-2">
+    <div class="flex items-center">
+      <Icon
+        v-for="(icon, index) in getIcons()"
+        class="mr-[4px] rounded bg-gray-400 px-px text-neutral-100 dark:bg-gray-200 dark:text-neutral-500"
+        :key="index"
+        :icon="icon"
+        :real-size="14"
+      ></Icon>
+      <div class="w-[100px] truncate">
+        {{ customMatch || keyword }}
+      </div>
+    </div>
   </td>
   <td>
     <Checkbox
@@ -59,7 +70,14 @@ import Image from '@/components/common/Image.vue'
 import Checkbox from '@/components/common/Checkbox.vue'
 import { computed } from 'vue'
 import { useCategoryStore } from '@/store'
-import { mdiPackage } from '@mdi/js'
+import {
+  mdiPackage,
+  mdiRegex,
+  mdiAlphabeticalVariant,
+  mdiMagnify,
+  mdiAllInclusive
+} from '@mdi/js'
+import ItemModel from '@/models/ItemModel'
 
 const COLORS = [
   'bg-lime-500',
@@ -86,6 +104,8 @@ const props = withDefaults(
     subtitle: string
     url: string
     keyword?: string
+    customMatch?: string
+    isOver?: boolean
     enabled?: boolean
     categoryId: string
     builtin?: boolean
@@ -102,6 +122,23 @@ const categoryName = computed(
 )
 
 const emit = defineEmits(['enabled-change'])
+
+function getIcons() {
+  const icons: string[] = []
+  if (!ItemModel.getSearchPatternType(props.url)) return icons
+
+  if (props.customMatch) {
+    icons.push(mdiRegex)
+  } else {
+    if (props.isOver) {
+      icons.push(mdiAllInclusive)
+    }
+    if (props.keyword) {
+      icons.push(mdiAlphabeticalVariant)
+    }
+  }
+  return icons.length > 0 ? icons : [mdiMagnify]
+}
 </script>
 
 <style lang="sass" scoped></style>

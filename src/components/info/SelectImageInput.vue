@@ -49,6 +49,7 @@ import Image from '@/components/common/Image.vue'
 import Icon from '@/components/common/Icon.vue'
 import { ref } from 'vue'
 import { mdiCloseThick, mdiImagePlusOutline } from '@mdi/js'
+import { FileConstant } from '@/constant'
 
 const props = withDefaults(
   defineProps<{
@@ -60,7 +61,15 @@ const props = withDefaults(
   }
 )
 
-const acceptTypes = ref(['image/png', 'image/jpeg'].join(','))
+const acceptTypes = ref(
+  [
+    ...FileConstant.FEATURE_IMAGE_TYPES,
+    'image/vnd.microsoft.icon',
+    'image/x-icon',
+    'image/webp',
+    'image/gif'
+  ].join(',')
+)
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 function openFileDialog() {

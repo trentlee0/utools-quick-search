@@ -5,7 +5,7 @@ export enum StoreKey {
 }
 
 export enum FeatureCode {
-  QUICK_SEARCH = 'quick-search',
+  QUICK_OPEN = 'quick-open',
   OPEN_URL = 'open-url',
   ADD_ITEM = 'add-item'
 }
@@ -13,4 +13,5 @@ export enum FeatureCode {
 export namespace FileConstant {
   export const KB = 1 << 10
   export const MB = KB << 10
+  export const FEATURE_IMAGE_TYPES = ['image/png', 'image/jpeg']
 }

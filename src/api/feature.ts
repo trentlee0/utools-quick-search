@@ -1,4 +1,4 @@
-import SearchItemModel from '@/models/SearchItemModel'
+import ItemModel from '@/models/ItemModel'
 
 type FeatureCommand =
   | string
@@ -14,37 +14,50 @@ export function getFeatures() {
   return utools.getFeatures()
 }
 
-export function addFeature(item: SearchItemModel) {
-  const { id, title, icon, subtitle, keyword, platform } = item
-  const cmds: FeatureCommand[] = [title]
-  // 存在 keyword 才动态注册正则匹配
-  if (keyword) {
+export function addFeature(item: ItemModel) {
+  const { title, keyword, customMatch } = item
+  const cmds: FeatureCommand[] = []
+  // 如果是 Custom Match 就不用其他方式匹配
+  if (ItemModel.isCustomMatch(item)) {
     cmds.push({
       type: 'regex',
       label: title,
-      match: `/^(${keyword} )(.*)$/`,
-      minLength: keyword.length,
-      maxLength: 150
+      match: customMatch,
+      minLength: 1
     })
-  }
-  if (item.isOver) {
-    cmds.push({
-      type: 'over',
-      label: title,
-      minLength: 1,
-      maxLength: 500
-    })
+  } else {
+    cmds.push(title)
+
+    // 存在 keyword 才动态注册正则匹配
+    if (keyword) {
+      cmds.push({
+        type: 'regex',
+        label: title,
+        match: `/^(${keyword} )(.*)$/`,
+        minLength: keyword.length,
+        maxLength: 150
+      })
+    }
+
+    if (item.isOver) {
+      cmds.push({
+        type: 'over',
+        label: title,
+        minLength: 1,
+        maxLength: 500
+      })
+    }
   }
   utools.setFeature({
-    code: id.toString(),
-    icon: icon || 'logo.png',
-    platform: platform!,
-    explain: subtitle,
+    code: item.id.toString(),
+    icon: item.icon || 'logo.png',
+    platform: item.platform!,
+    explain: item.subtitle || ItemModel.DEFAULT_SUBTITLE,
     cmds
   })
 }
 
-export function updateFeature(item: SearchItemModel) {
+export function updateFeature(item: ItemModel) {
   removeFeature(item.id)
   addFeature(item)
 }

@@ -26,7 +26,7 @@ withDefaults(
   }
 )
 
-const emit = defineEmits(['input', 'blur', 'update:modelValue', 'select-file'])
+const emit = defineEmits(['blur', 'update:modelValue', 'select-file'])
 
 function openFileDialog() {
   const getFilter = () => {
@@ -48,9 +48,9 @@ function openFileDialog() {
   emit('select-file', filePath)
 }
 
-function handleInputEvent(value: string) {
+function handleInputEvent(e: InputEvent | CompositionEvent) {
+  const value = (e.target as HTMLInputElement).value
   emit('update:modelValue', value)
-  emit('input', value)
 }
 </script>
 

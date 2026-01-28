@@ -1,7 +1,8 @@
 <template>
   <button
-    class="mask outline-none transition duration-200"
-    :class="`${ButtonType[type]}`"
+    class="outline-none transition duration-200"
+    :class="`${ButtonType[type]} ${disabled ? '' : 'mask'}`"
+    :disabled="disabled"
   >
     <slot></slot>
   </button>
@@ -17,6 +18,7 @@ enum ButtonType {
 withDefaults(
   defineProps<{
     type?: keyof typeof ButtonType
+    disabled?: boolean
   }>(),
   {
     type: 'normal'

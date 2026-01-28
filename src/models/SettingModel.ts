@@ -1,4 +1,4 @@
-import SearchItemModel from './SearchItemModel'
+import ItemModel from './ItemModel'
 import * as search from '@/api/search'
 
 export default class SettingModel {
@@ -11,9 +11,9 @@ export default class SettingModel {
   public static migrateDatabase(setting: SettingModel) {
     let needed = false
     if (setting.version < 1) {
-      // 保存默认搜索项
-      SearchItemModel.DEFAULT_SEARCH_ITEMS.reverse().forEach((item) => {
-        SearchItemModel.checkSearchItem(item)
+      // 保存默认项目
+      ItemModel.DEFAULT_SEARCH_ITEMS.reverse().forEach((item) => {
+        ItemModel.checkSearchItem(item)
         search.unshiftItem(item)
       })
       setting.version = 1

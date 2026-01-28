@@ -1,6 +1,6 @@
 {
-  "name": "Quick Search",
-  "pluginName": "Quick Search",
+  "name": "Quick Open",
+  "pluginName": "Quick Open",
   "description": "通过 URL 快速搜索、打开网页和应用",
   "version": "1.0.0",
   "author": "Trent0",
@@ -25,13 +25,13 @@
     },
     {
       "code": "add-item",
-      "explain": "添加搜索项",
+      "explain": "添加项目",
       "cmds": [
-        "Add Quick Search Item",
-        "添加搜索项",
+        "Add Item",
+        "添加项目",
         {
           "type": "window",
-          "label": "添加网址",
+          "label": "添加当前网址",
           "match": {
             "app": [
               "Safari.app",
@@ -40,6 +40,7 @@
               "Opera.app",
               "Vivaldi.app",
               "Brave Browser.app",
+              "Zen.app",
               "chrome.exe",
               "firefox.exe",
               "msedge.exe",
@@ -51,12 +52,12 @@
       ]
     },
     {
-      "code": "quick-search",
-      "explain": "Quick Search 设置",
+      "code": "quick-open",
+      "explain": "Quick Open 设置",
       "cmds": [
-        "Quick Search",
-        "Quick Search Setting",
-        "Quick Search 设置"
+        "Quick Open",
+        "Quick Open Setting",
+        "Quick Open 设置"
       ]
     }
   ]

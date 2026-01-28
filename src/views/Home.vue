@@ -14,16 +14,16 @@
       </div>
     </div>
 
-    <SearchTable
+    <ItemTable
       @item-enabled-change="handleItemEnabledChange"
       @item-click="handleItemClick"
       :table="filteredTable"
       @drop-item="handleDroptItem"
     >
-    </SearchTable>
+    </ItemTable>
     <Btn
       type="float"
-      class="bg-blue-500 text-white shadow-xl"
+      class="bg-blue-500 text-white shadow-2xl"
       @click="handleAddBtnClick"
     >
       <Icon :icon="mdiPlus" size="medium"></Icon>
@@ -32,13 +32,13 @@
 </template>
 
 <script setup lang="ts">
-import SearchTable from '@/components/home/SearchTable.vue'
+import ItemTable from '@/components/home/ItemTable.vue'
 import SearchInput from '@/components/home/SearchInput.vue'
 import Btn from '@/components/common/Btn.vue'
 import Icon from '@/components/common/Icon.vue'
 import Select from '@/components/common/Select.vue'
 
-import SearchItemModel from '@/models/SearchItemModel'
+import ItemModel from '@/models/ItemModel'
 import { ref, watchEffect, computed } from 'vue'
 import { useCategoryStore, useMainStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -53,7 +53,7 @@ const categoryStore = useCategoryStore()
 const categoryId = ref(CategoryModel.ALL.id)
 
 function handleItemEnabledChange(value: {
-  row: SearchItemModel
+  row: ItemModel
   enabled: boolean
 }) {
   const { row, enabled } = value
@@ -64,7 +64,7 @@ function handleDroptItem(value: { fromItemId: number; toItemId: number }) {
   mainStore.moveSearchItems(fromItemId, toItemId)
 }
 
-function handleItemClick(value: { row: SearchItemModel }) {
+function handleItemClick(value: { row: ItemModel }) {
   const { row } = value
   if (row.enabled !== false) {
     router.push(`/info/categories/${row.categoryId}/items/${row.id}`)
@@ -81,7 +81,7 @@ function handleAddBtnClick() {
 
 const table = computed(() => mainStore.searchItems)
 const searchKeyword = ref<string>('')
-const filteredTable = ref<Array<SearchItemModel>>([])
+const filteredTable = ref<Array<ItemModel>>([])
 
 watchEffect(() => {
   const search = searchKeyword.value?.toUpperCase()

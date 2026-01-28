@@ -1,9 +1,10 @@
 import { createPinia, defineStore } from 'pinia'
 import { toRaw } from 'vue'
 import SettingModel from '@/models/SettingModel'
-import SearchItemModel from '@/models/SearchItemModel'
+import ItemModel from '@/models/ItemModel'
 import CategoryModel from '@/models/CategoryModel'
-import { sync } from 'utools-utils/storage'
+import { sync } from 'utools-utils'
+import { Action } from 'utools-utils/type'
 import { StoreKey } from '@/constant'
 import { toMap, moveItems, isIllegalIndex } from '@/utils/collections'
 import * as category from '@/api/category'
@@ -12,7 +13,7 @@ import * as feature from '@/api/feature'
 
 export const useMainStore = defineStore('main', {
   state: () => {
-    const setting = sync.getOrDefault(StoreKey.SETTING, new SettingModel())
+    const setting = sync.get(StoreKey.SETTING, new SettingModel())
 
     if (SettingModel.migrateDatabase(setting)) {
       console.log('database migrated:', setting)
@@ -29,6 +30,7 @@ export const useMainStore = defineStore('main', {
     }
 
     return {
+      action: <Action | null>null,
       setting,
       searchItems,
       map: toMap(
@@ -66,8 +68,8 @@ export const useMainStore = defineStore('main', {
       })
       search.saveItemIds(this.searchItems.map((item) => item.id))
     },
-    addSearchItem(item: SearchItemModel) {
-      SearchItemModel.checkSearchItem(item)
+    addSearchItem(item: ItemModel) {
+      ItemModel.checkSearchItem(item)
 
       this.searchItems.push(item)
       this._setIndex(item.id, this.searchItems.length - 1)
@@ -75,10 +77,10 @@ export const useMainStore = defineStore('main', {
       search.addItem(raw)
       feature.addFeature(raw)
     },
-    updateSearchItem(itemId: number, item: SearchItemModel) {
+    updateSearchItem(itemId: number, item: ItemModel) {
       const index = this._getIndex(itemId)
 
-      SearchItemModel.checkSearchItem(item)
+      ItemModel.checkSearchItem(item)
 
       this.searchItems[index] = item
       const raw = toRaw(item)

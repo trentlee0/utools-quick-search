@@ -4,9 +4,9 @@
       <thead class="top-0 z-10 bg-gray-100 text-sm dark:bg-utools-black">
         <tr class="h-7">
           <th class="table-head w-4/12 pl-4 pr-2">名称</th>
-          <th class="table-head w-5/12">URL</th>
+          <th class="table-head w-4/12">URL</th>
           <th class="table-head w-1/12">分类</th>
-          <th class="table-head w-1/12">搜索前缀</th>
+          <th class="table-head w-2/12">搜索匹配</th>
           <th class="table-head w-1/12">启用</th>
         </tr>
       </thead>
@@ -26,17 +26,19 @@
           @drop="handleDropEvent($event, row.id)"
           @dragover.prevent
         >
-          <SearchRow
+          <ItemRow
             :icon="row.icon || 'logo.png'"
             :title="row.title"
-            :subtitle="row.subtitle"
+            :subtitle="row.subtitle || ItemModel.DEFAULT_SUBTITLE"
             :url="row.url"
             :keyword="row.keyword"
+            :custom-match="row.customMatch"
             :enabled="row.enabled"
             :category-id="row.categoryId"
+            :is-over="row.isOver"
             :builtin="isBuiltinItem(row.id)"
             @enabled-change="handleEnabledChange(index, row, $event)"
-          ></SearchRow>
+          ></ItemRow>
         </tr>
       </TransitionGroup>
     </table>
@@ -45,27 +47,29 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import SearchRow from './SearchRow.vue'
-import SearchItemModel from '@/models/SearchItemModel'
+import ItemRow from './ItemRow.vue'
+import ItemModel from '@/models/ItemModel'
 
-interface SearchRowProp {
+interface RowProp {
   id: number
   icon?: string
   title: string
   subtitle: string
   url: string
   keyword?: string
+  customMatch?: string
+  isOver?: boolean
   enabled?: boolean
   categoryId: string
 }
 
-defineProps<{ table: Array<SearchRowProp> }>()
+defineProps<{ table: Array<RowProp> }>()
 
 const emit = defineEmits(['item-enabled-change', 'item-click', 'drop-item'])
 
 function isBuiltinItem(itemId: number) {
   return (
-    SearchItemModel.DEFAULT_SEARCH_ITEMS.findIndex(
+    ItemModel.DEFAULT_SEARCH_ITEMS.findIndex(
       (item) => item.id === itemId
     ) !== -1
   )
@@ -73,13 +77,13 @@ function isBuiltinItem(itemId: number) {
 
 function handleEnabledChange(
   index: number,
-  row: SearchRowProp,
+  row: RowProp,
   enabled: boolean
 ) {
   emit('item-enabled-change', { index, row, enabled })
 }
 
-function handleItemClick(index: number, row: SearchRowProp) {
+function handleItemClick(index: number, row: RowProp) {
   emit('item-click', { index, row })
 }
 

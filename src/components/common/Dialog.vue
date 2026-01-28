@@ -4,20 +4,22 @@
       <div class="dialog-mask" v-if="modelValue" @click="handleOutsideClick">
         <div class="dialog-container" @click.stop>
           <div class="rounded-md bg-white dark:bg-neutral-800">
-            <div class="flex items-center px-4 py-3">
-              <slot name="header">
-                <Icon
-                  class="mr-2 cursor-pointer"
-                  :real-size="20"
-                  :icon="mdiClose"
-                  @click="emit('update:modelValue', false)"
-                  v-if="btnType === 'close'"
-                ></Icon>
-                <span class="select-none font-bold">{{ title }}</span>
-              </slot>
-            </div>
+            <template v-if="title || btnType === 'close'">
+              <div class="flex items-center px-4 py-3">
+                <slot name="header">
+                  <Icon
+                    class="mr-2 cursor-pointer"
+                    :real-size="20"
+                    :icon="mdiClose"
+                    @click="emit('update:modelValue', false)"
+                    v-if="btnType === 'close'"
+                  ></Icon>
+                  <span class="select-none font-bold">{{ title }}</span>
+                </slot>
+              </div>
 
-            <Divider></Divider>
+              <Divider></Divider>
+            </template>
 
             <div class="px-5 py-4">
               <slot></slot>
@@ -63,7 +65,7 @@ const props = withDefaults(
     btnType?: 'none' | 'close' | 'confirm'
   }>(),
   {
-    title: '',
+    title: undefined,
     persistence: false,
     btnType: 'confirm'
   }

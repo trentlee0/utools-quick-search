@@ -4,9 +4,17 @@ import utools from 'vite-plugin-utools'
 import path from 'path'
 
 export default defineConfig({
+  define: {
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'true'
+  },
   base: './',
   build: {
     outDir: 'dist/'
+  },
+  css: {
+    preprocessorOptions: {
+      sass: {}
+    }
   },
   plugins: [
     vue(),

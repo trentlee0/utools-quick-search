@@ -23,7 +23,10 @@
         :value="modelValue"
         :placeholder="placeholder"
         :autofocus="autofocus"
-        @input="handlInputEvent"
+        @compositionstart="handleCompositionStart($event as CompositionEvent)"
+        @compositionend="handleCompositionEnd($event as CompositionEvent)"
+        @input="handleInputEvent($event as InputEvent)"
+        @focus="emit('focus', $event)"
         @blur="emit('blur', $event)"
       />
       <div
@@ -74,11 +77,31 @@ withDefaults(
   }
 )
 
-const emit = defineEmits(['update:modelValue', 'input', 'blur'])
-function handlInputEvent(e: Event) {
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+  (e: 'input', payload: InputEvent | CompositionEvent): void
+  (e: 'focus', payload: FocusEvent): void
+  (e: 'blur', payload: FocusEvent): void
+}>()
+
+const composing = ref(false)
+
+function handleCompositionStart(e: CompositionEvent) {
+  composing.value = true
+}
+
+function handleCompositionEnd(e: CompositionEvent) {
+  composing.value = false
   const value = (e.target as HTMLInputElement).value
   emit('update:modelValue', value)
-  emit('input', value)
+  emit('input', e)
+}
+
+function handleInputEvent(e: InputEvent) {
+  if (composing.value) return
+  const value = (e.target as HTMLInputElement).value
+  emit('update:modelValue', value)
+  emit('input', e)
 }
 
 const textInput = ref<HTMLInputElement | null>(null)

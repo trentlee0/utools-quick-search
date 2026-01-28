@@ -1,5 +1,5 @@
-import SearchItemModel from '@/models/SearchItemModel'
-import { sync } from 'utools-utils/storage'
+import ItemModel from '@/models/ItemModel'
+import { sync } from 'utools-utils'
 import { StoreKey } from '@/constant'
 import { toMap } from '@/utils/collections'
 
@@ -13,35 +13,35 @@ function buildKey(itemId?: number | string): string {
 }
 
 function getItemIds() {
-  return sync.getOrDefault<number[]>(StoreKey.SEARCH_ITEMS, [])
+  return sync.get<number[]>(StoreKey.SEARCH_ITEMS, [])
 }
 
 /**
- * 保存搜索项顺序
+ * 保存项目顺序
  */
 export function saveItemIds(itemIds: number[]) {
   sync.set(StoreKey.SEARCH_ITEMS, itemIds)
 }
 
 export function getList() {
-  const arr = sync.like<SearchItemModel>(buildKey())
+  const arr = sync.like<ItemModel>(buildKey())
   const map = toMap(arr, (item) => item.id)
   return getItemIds().map((id) => map.get(id)!)
 }
 
 export function getItem(itemId: number | string) {
-  const arr = sync.like<SearchItemModel>(buildKey(itemId))
+  const arr = sync.like<ItemModel>(buildKey(itemId))
   return arr.length >= 1 ? arr[0] : null
 }
 
-export function addItem(item: SearchItemModel) {
+export function addItem(item: ItemModel) {
   const itemIds = getItemIds()
   itemIds.push(item.id)
   saveItemIds(itemIds)
   sync.set(buildKey(item.id), item)
 }
 
-export function unshiftItem(item: SearchItemModel) {
+export function unshiftItem(item: ItemModel) {
   const itemIds = getItemIds()
   itemIds.unshift(item.id)
   saveItemIds(itemIds)
@@ -59,6 +59,6 @@ export function removeItem(itemId: number) {
   return false
 }
 
-export function updateItem(item: SearchItemModel) {
+export function updateItem(item: ItemModel) {
   sync.set(buildKey(item.id), item)
 }
