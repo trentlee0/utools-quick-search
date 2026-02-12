@@ -52,8 +52,8 @@ useKeyDown((e) => {
   }
 })
 
-utools.onPluginEnter(() => {
-  focus()
+defineExpose({
+  focus
 })
 
 const emit = defineEmits(['update:modelValue'])

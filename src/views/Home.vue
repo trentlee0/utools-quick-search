@@ -2,7 +2,7 @@
   <div class="flex h-full flex-col">
     <div class="flex items-center justify-start px-4 pt-1.5 pb-1">
       <div class="h-9 w-64">
-        <SearchInput autofocus v-model="searchKeyword"></SearchInput>
+        <SearchInput ref="searchInputRef" v-model="searchKeyword"></SearchInput>
       </div>
 
       <div class="ml-10">
@@ -39,7 +39,7 @@ import Icon from '@/components/common/Icon.vue'
 import Select from '@/components/common/Select.vue'
 
 import ItemModel from '@/models/ItemModel'
-import { ref, watchEffect, computed } from 'vue'
+import { ref, watchEffect, computed, onUnmounted, onMounted } from 'vue'
 import { useCategoryStore, useMainStore } from '@/store'
 import { useRouter } from 'vue-router'
 import CategoryModel from '@/models/CategoryModel'
@@ -104,7 +104,14 @@ watchEffect(() => {
     )
 })
 
-utools.onPluginOut(() => {
+const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null)
+
+onMounted(() => {
+  searchInputRef.value?.focus()
+})
+
+onUnmounted(() => {
+  console.log('home onUnmounted')
   searchKeyword.value = ''
   document.documentElement.scrollTo({ top: 0 })
 })
