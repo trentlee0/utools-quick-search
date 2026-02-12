@@ -282,10 +282,9 @@ import {
   reactive,
   ref,
   computed,
-  onDeactivated,
-  watchEffect,
   watch,
-  nextTick
+  nextTick,
+  onActivated
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCategoryStore, useMainStore } from '@/store'
@@ -471,59 +470,6 @@ const newCategoryName = ref('')
 const searchItemId = ref(-1)
 const data = ref(new ItemModel())
 
-function isDefaultSearchItem(itemId: number) {
-  return (
-    ItemModel.DEFAULT_SEARCH_ITEMS.findIndex((item) => item.id === itemId) !==
-    -1
-  )
-}
-
-const titleFieldRef = ref<InstanceType<typeof TextField> | null>(null)
-
-watchEffect(async () => {
-  if (route.name !== 'Info') return
-
-  const itemId = route.params.itemId as string
-  const categoryId = route.params.categoryId as string
-
-  // 通过项目 ID 区分页面作用
-  if (/^[0-9]+$/.test(itemId)) {
-    op.value = 'update'
-    searchItemId.value = parseInt(itemId)
-    data.value = deepCopy(mainStore.getSearchItem(searchItemId.value))
-    data.value.enabled = data.value.enabled !== false
-  } else {
-    titleFieldRef.value?.focus()
-    op.value = 'add'
-    data.value = new ItemModel()
-    // 设置默认分类 ID
-    data.value.categoryId = categoryId
-    if (itemId === 'add-item-from-browser') {
-      const action = mainStore.action as WindowAction
-      const tab = await getCurrentBrowserTab(action.payload)
-      console.log(tab)
-      data.value.url = tab.url
-      const { title, subtitle } = parsePageTitle(tab.title)
-      data.value.title = title
-      data.value.subtitle = subtitle
-    }
-  }
-})
-
-const getFaviconIconLoading = ref(false)
-// 变量恢复默认值
-onDeactivated(() => {
-  testURLDialog.value = false
-  testURLInput.value = ''
-  deleteDialog.value = false
-  categoryDialog.value = false
-  newCategoryName.value = ''
-  getFaviconIconLoading.value = false
-  for (const key in rules) {
-    rules[key].verify.show = false
-  }
-})
-
 const rules = reactive<Rules>({
   title: {
     check: (value?: string) => !!value,
@@ -548,6 +494,62 @@ const rules = reactive<Rules>({
       disabled: () => searchPatternType.value !== 'regex'
     }
   }
+})
+
+function isDefaultSearchItem(itemId: number) {
+  return (
+    ItemModel.DEFAULT_SEARCH_ITEMS.findIndex((item) => item.id === itemId) !==
+    -1
+  )
+}
+
+const getFaviconIconLoading = ref(false)
+
+function resetData() {
+  testURLDialog.value = false
+  testURLInput.value = ''
+  deleteDialog.value = false
+  categoryDialog.value = false
+  newCategoryName.value = ''
+  getFaviconIconLoading.value = false
+  for (const key in rules) {
+    rules[key].verify.show = false
+  }
+}
+
+const titleFieldRef = ref<InstanceType<typeof TextField> | null>(null)
+
+async function loadItemInfo() {
+  resetData()
+
+  const itemId = route.params.itemId as string
+  const categoryId = route.params.categoryId as string
+
+  // 通过项目 ID 区分页面作用
+  if (/^[0-9]+$/.test(itemId)) {
+    op.value = 'update'
+    searchItemId.value = parseInt(itemId)
+    data.value = deepCopy(mainStore.getSearchItem(searchItemId.value))
+    data.value.enabled = data.value.enabled !== false
+  } else {
+    titleFieldRef.value?.focus()
+    op.value = 'add'
+    data.value = new ItemModel()
+    // 设置默认分类 ID
+    data.value.categoryId = categoryId
+    if (itemId.startsWith('add-item-from-browser')) {
+      const action = mainStore.action as WindowAction
+      const tab = await getCurrentBrowserTab(action.payload)
+      data.value.url = tab.url
+      const { title, subtitle } = parsePageTitle(tab.title)
+      data.value.title = title
+      data.value.subtitle = subtitle
+    }
+  }
+}
+
+onActivated(async () => {
+  await loadItemInfo()
 })
 
 async function saveSearchItem() {

@@ -1,12 +1,11 @@
-import { onActivated, onMounted, onUnmounted } from 'vue'
-import { onBeforeRouteLeave } from 'vue-router'
+import { onActivated, onDeactivated } from 'vue'
 
 export function useKeyDown(handler: (e: KeyboardEvent) => void) {
   onActivated(() => {
     window.addEventListener('keydown', handler)
   })
-  
-  onBeforeRouteLeave(() => {
+
+  onDeactivated(() => {
     window.removeEventListener('keydown', handler)
   })
 }
