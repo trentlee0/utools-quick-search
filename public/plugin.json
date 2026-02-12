@@ -1,6 +1,6 @@
 {
-  "name": "Quick Opener",
-  "pluginName": "Quick Opener",
+  "name": "Opener",
+  "pluginName": "Opener",
   "description": "通过 URL 快速搜索、打开网页和应用",
   "version": "1.0.0",
   "author": "Trent0",
@@ -12,6 +12,15 @@
     "main": "http://127.0.0.1:5173/"
   },
   "features": [
+    {
+      "code": "opener",
+      "explain": "Opener 设置",
+      "cmds": [
+        "Opener",
+        "Opener Setting",
+        "Opener 设置"
+      ]
+    },
     {
       "code": "open-url",
       "explain": "默认应用打开 URL",
@@ -49,15 +58,6 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "code": "quick-opener",
-      "explain": "Quick Opener 设置",
-      "cmds": [
-        "Quick Opener",
-        "Quick Opener Setting",
-        "Quick Opener 设置"
       ]
     }
   ]

@@ -5,7 +5,7 @@ export enum StoreKey {
 }
 
 export enum FeatureCode {
-  QUICK_OPENER = 'quick-opener',
+  OPENER = 'opener',
   OPEN_URL = 'open-url',
   ADD_ITEM = 'add-item'
 }

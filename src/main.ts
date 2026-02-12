@@ -33,13 +33,13 @@ utools.onPluginEnter((a) => {
   const action = a as Action
 
   state.code = action.code
-  if (action.code === FeatureCode.QUICK_OPENER) {
+  if (action.code === FeatureCode.OPENER) {
     router.replace('/')
   } else if (action.code === FeatureCode.ADD_ITEM) {
     let to = `/info/categories/${CategoryModel.DEFAULT.id}/items/`
     if (action.type === 'window') {
       mainStore.action = action
-      to += 'add-item-from-browser'
+      to += 'add-item-from-browser' + Date.now()
     }
     router.push(to)
   } else if (action.code === FeatureCode.OPEN_URL) {
@@ -49,7 +49,6 @@ utools.onPluginEnter((a) => {
     const item = mainStore.getSearchItem(action.code)
     const { url, app, keyword } = item
 
-    console.log(action)
     if (action.type === 'regex') {
       if (ItemModel.isCustomMatch(item)) {
         openURL(regexpTemplate(url, item.customMatch!, action.payload), app)
@@ -72,7 +71,7 @@ utools.onPluginEnter((a) => {
 })
 
 window.addEventListener('keydown', (e) => {
-  if (state.code === FeatureCode.QUICK_OPENER) return
+  if (state.code === FeatureCode.OPENER) return
 
   if (e.key === 'Enter') {
     openURL(simpleTemplate(state.url, { query: state.word }), state.app)
